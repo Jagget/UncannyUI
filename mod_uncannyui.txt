@@ -1,0 +1,79 @@
+- UncannyUI
+
+schema: *key, $text
+
+Mod.Description, "Перевод Uncanny UI на русский язык"
+
+- Настройки
+Settings.Common.Name, "Общее"
+Settings.Common.DefaultColor.Name, "Цвет по-умолчанию"
+Settings.Common.DefaultColor.Description, "Цвет, который используется на кнопках и прочих элементах"
+Settings.Common.HideWorld.Name, "Скрывать мир"
+Settings.Common.HideWorld.Description, "Затемнять экран во время ожидания"
+Settings.Dialogue.Name, "Диалог"
+Settings.Dialogue.Enabled.Name, "Включено"
+Settings.Dialogue.PortraitPosition.Name, "Вид портрета"
+Settings.Dialogue.PortraitPosition.Description, "Значения: 'Без портрета'; 'Слева'; 'В центре'; 'Справа'"
+Settings.Dialogue.PortraitSize.Name, "Размер портрета"
+Settings.Dialogue.PortraitSize.Description, "Размер портрета в пикселях"
+Settings.Inventory.Name, "Инвентарь"
+Settings.Inventory.Enabled.Name, "Включено"
+Settings.Inventory.OnlyRemoveFromRemote.Name, "Только перемещение"
+Settings.Inventory.OnlyRemoveFromRemote.Description, "Клик по предметам на земле или в телеге всегда перемещает их, а не экипирует"
+Settings.Rest.Name, "Отдых"
+Settings.Rest.Enabled.Name, "Включено"
+Settings.Rest.LoiterMode.Name, "Режим отдыха"
+Settings.Rest.LoiterMode.Description, "Значения: 'Ждать неограниченно'; 'Ждать с ограничениями'; 'Как в основной игре'"
+
+- Окно инвентаря
+
+Amulets, "Амулеты"
+Bracelets, "Браслеты"
+Rings, "Кольца"
+Bracers, "Наручи"
+Marks, "Значки"
+Crystals, "Кристаллы"
+Equip, "Надеть"
+Use, "Использ."
+Info, "Инфо"
+Exit, "Выход"
+weaponsAndArmorButtonTooltip, "Оружие и броня"
+magicItemsButtonTooltip, "Магические предметы"
+clothingAndMiscButtonTooltip, "Одежда и прочее"
+ingredientsButtonTooltip, "Ингредиенты"
+
+- Окно диалога
+
+Goodbye, "Прощайте"
+Polite, "Вежливо"
+Normal, "Нормально"
+Blunt, "Грубо"
+CopiedtoLog, "Скопировано в журнал"
+WhereamI, "Где я?"
+Anywork, "Есть работа?"
+Anynews, "Какие новости?"
+CurrentEvents, "Новости и слухи"
+Factions, "Фракции"
+Locations, "Локации"
+People, "Люди"
+Things, "Вещи"
+PreviousList, "< Предыдущий список"
+
+- Окно отдыха/ожидания
+
+IllegalToRest, "Разбивать лагерь в городе или рядом с ним незаконно."
+Loiter, "Ждать"
+Rest, "Отдых"
+Stop, "Отмена"
+UntilHealed, "До исцеления"
+Wait, "Ждать"
+MustRentARoom, "Здесь нельзя отдыхать. Вы должны заплатить за комнату."
+MayNotRestHere, "Здесь нельзя отдыхать."
+YouHaveARoom, "Здесь можно отдыхать, ваша комната оплачена ещё на"
+MayRestHere, "Здесь можно отдыхать."
+MembershipAllowsToRest, "Членство в данной организации позволяет вам отдыхать здесь."
+Day, "д."
+Days, "д."
+And, "и"
+Hour, "ч."
+Hours, "ч."
