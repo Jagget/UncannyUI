@@ -36,22 +36,22 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         public static string LabelClothingAndMiscButtonTooltip = UncannyUILoader.Instance.GetMod().Localize("clothingAndMiscButtonTooltip");
         public static string LabelIngredientsButtonTooltip = UncannyUILoader.Instance.GetMod().Localize("ingredientsButtonTooltip");
 
-        private DaggerfallUnityItem stackItem;
-        private ItemCollection stackFrom;
-        private ItemCollection stackTo;
-        private bool stackEquip;
+        private DaggerfallUnityItem _stackItem;
+        private ItemCollection _stackFrom;
+        private ItemCollection _stackTo;
+        private bool _stackEquip;
 
-        int dropIconArchive;
-        int dropIconTexture;
+        int _dropIconArchive;
+        int _dropIconTexture;
 
-        ItemCollection.AddPosition preferredOrder = ItemCollection.AddPosition.DontCare;
+        ItemCollection.AddPosition _preferredOrder = ItemCollection.AddPosition.DontCare;
 
-        private int maxAmount;
+        private int _maxAmount;
 
-        Button remoteButton;
-        Rect remoteButtonRect = new Rect(274, 10, 23, 18);
+        Button _remoteButton;
+        Rect _remoteButtonRect = new Rect(274, 10, 23, 18);
 
-        readonly Rect[] itemLocalButtonRects = new Rect[]
+        readonly Rect[] _itemLocalButtonRects = new[]
         {
             new Rect(0, 0, 23, 22),
             new Rect(23, 0, 23, 22),
@@ -78,7 +78,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             new Rect(46, 110, 23, 22),
             new Rect(69, 110, 23, 22),
         };
-        readonly Rect[] itemRemoteButtonRects = new Rect[]
+        readonly Rect[] _itemRemoteButtonRects = new[]
        {
             new Rect(0, 0, 23, 22),
             new Rect(23, 0, 23, 22),
@@ -107,7 +107,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         Vector2 wagonCarryWeightPos = new Vector2(288, 2);
 
 
-        string[] accessoryLabels = { UncannyInventoryWindow.LabelAmulets, UncannyInventoryWindow.LabelBracelets, UncannyInventoryWindow.LabelRings, UncannyInventoryWindow.LabelBracers, UncannyInventoryWindow.LabelMarks, UncannyInventoryWindow.LabelCrystals };
+        string[] accessoryLabels = { LabelAmulets, LabelBracelets, LabelRings, LabelBracers, LabelMarks, LabelCrystals };
         Rect firstAccessoryRect = new Rect(0, 32, 46, 9);
         int accessoryYAdd = 31;
 
@@ -228,10 +228,10 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             wagonIconPanel.BackgroundTextureLayout = BackgroundLayout.ScaleToFit;
 
             wagonButton.BackgroundTexture = wagonNotSelected;
-            remoteButton.BackgroundTexture = remoteSelected;
+            _remoteButton.BackgroundTexture = remoteSelected;
 
             //Remote icons
-            remoteTargetIconPanel = DaggerfallUI.AddPanel(new Rect(2, 2, remoteButton.InteriorWidth - 4, remoteButton.InteriorHeight - 4), remoteButton);
+            remoteTargetIconPanel = DaggerfallUI.AddPanel(new Rect(2, 2, _remoteButton.InteriorWidth - 4, _remoteButton.InteriorHeight - 4), _remoteButton);
             remoteTargetIconPanel.BackgroundTextureLayout = BackgroundLayout.ScaleToFit;
             UpdateRemoteTargetIcon();
 
@@ -296,10 +296,10 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             goldButton.OnMouseClick += GoldButton_OnMouseClick;
             goldButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.InventoryGold);
 
-            remoteButton = DaggerfallUI.AddButton(remoteButtonRect, NativePanel);
-            remoteButton.OnMouseClick += RemoteButton_OnMouseClick;
-            remoteButton.OnMiddleMouseClick += RemoteButton_OnMiddleMouseClick;
-            remoteButton.OnRightMouseClick += RemoteButton_OnRightMouseClick;
+            _remoteButton = DaggerfallUI.AddButton(_remoteButtonRect, NativePanel);
+            _remoteButton.OnMouseClick += RemoteButton_OnMouseClick;
+            _remoteButton.OnMiddleMouseClick += RemoteButton_OnMiddleMouseClick;
+            _remoteButton.OnRightMouseClick += RemoteButton_OnRightMouseClick;
 
             if (itemInfoPanel != null)
                 goldButton.OnMouseEnter += GoldButton_OnMouseEnter;
@@ -337,7 +337,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 TextScale = 0.75f
             };
 
-            localItemListScroller = new ItemListScroller(6, 4, localItemListRect, itemLocalButtonRects, miscLabelTemplate, defaultToolTip, 2, 1, true, 0, 0)
+            localItemListScroller = new ItemListScroller(6, 4, localItemListRect, _itemLocalButtonRects, miscLabelTemplate, defaultToolTip, 2, 1, true, 0, 0)
             {
                 Position = new Vector2(localItemListScrollerRect.x, localItemListScrollerRect.y),
                 Size = new Vector2(localItemListScrollerRect.width, localItemListScrollerRect.height),
@@ -352,7 +352,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             localItemListScroller.OnItemMiddleClick += LocalItemListScroller_OnItemMiddleClick;
             localItemListScroller.OnItemHover += LocalItemListScroller_OnHover;
 
-            remoteItemListScroller = new ItemListScroller(6, 2, remoteItemListRect, itemRemoteButtonRects, miscLabelTemplate, defaultToolTip, 2, 1, true, 0, 0)
+            remoteItemListScroller = new ItemListScroller(6, 2, remoteItemListRect, _itemRemoteButtonRects, miscLabelTemplate, defaultToolTip, 2, 1, true, 0, 0)
             {
                 Position = new Vector2(remoteItemListScrollerRect.x, remoteItemListScrollerRect.y),
                 Size = new Vector2(remoteItemListScrollerRect.width, remoteItemListScrollerRect.height),
@@ -388,15 +388,15 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             if (chooseOne)
             {
                 remoteTargetType = RemoteTargetTypes.Merchant;
-                dropIconArchive = DaggerfallLootDataTables.combatArchive;
-                dropIconTexture = 11;
+                _dropIconArchive = DaggerfallLootDataTables.combatArchive;
+                _dropIconTexture = 11;
             }
             else
             {   // Set dropped items as default target
                 remoteItems = droppedItems;
                 remoteTargetType = RemoteTargetTypes.Dropped;
-                dropIconArchive = DaggerfallLootDataTables.randomTreasureArchive;
-                dropIconTexture = -1;
+                _dropIconArchive = DaggerfallLootDataTables.randomTreasureArchive;
+                _dropIconTexture = -1;
             }
             // Use custom loot target if specified
             if (lootTarget != null)
@@ -409,16 +409,16 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 lootTarget.OnInventoryOpen();
                 if (lootTarget.playerOwned && lootTarget.TextureArchive > 0)
                 {
-                    dropIconArchive = lootTarget.TextureArchive;
+                    _dropIconArchive = lootTarget.TextureArchive;
                     int[] iconIdxs;
-                    DaggerfallLootDataTables.dropIconIdxs.TryGetValue(dropIconArchive, out iconIdxs);
+                    DaggerfallLootDataTables.dropIconIdxs.TryGetValue(_dropIconArchive, out iconIdxs);
                     if (iconIdxs != null)
                     {
                         for (int i = 0; i < iconIdxs.Length; i++)
                         {
                             if (iconIdxs[i] == lootTarget.TextureRecord)
                             {
-                                dropIconTexture = i;
+                                _dropIconTexture = i;
                                 break;
                             }
                         }
@@ -432,7 +432,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 usingWagon = false;
                 wagonButton.BackgroundTexture = wagonNotSelected;
-                remoteButton.BackgroundTexture = remoteSelected;
+                _remoteButton.BackgroundTexture = remoteSelected;
             }
 
             if (equipButton != null)
@@ -525,7 +525,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             // If icon has changed move items to dropped list so this loot is removed and a new one created
             if (lootTarget != null && lootTarget.playerOwned && lootTarget.TextureArchive > 0 &&
-                (lootTarget.TextureArchive != dropIconArchive || lootTarget.TextureRecord != DaggerfallLootDataTables.dropIconIdxs[dropIconArchive][dropIconTexture]))
+                (lootTarget.TextureArchive != _dropIconArchive || lootTarget.TextureRecord != DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive][_dropIconTexture]))
             {
                 droppedItems.TransferAll(lootTarget.Items);
             }
@@ -534,12 +534,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             if (droppedItems.Count > 0)
             {
                 DaggerfallLoot droppedLootContainer;
-                if (dropIconTexture > -1)
+                if (_dropIconTexture > -1)
                     droppedLootContainer = GameObjectHelper.CreateDroppedLootContainer(
                         GameManager.Instance.PlayerObject,
                         DaggerfallUnity.NextUID,
-                        dropIconArchive,
-                        DaggerfallLootDataTables.dropIconIdxs[dropIconArchive][dropIconTexture]);
+                        _dropIconArchive,
+                        DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive][_dropIconTexture]);
                 else
                     droppedLootContainer = GameObjectHelper.CreateDroppedLootContainer(GameManager.Instance.PlayerObject, DaggerfallUnity.NextUID);
 
@@ -700,10 +700,10 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         protected override void UpdateRemoteTargetIcon()
         {
             ImageData containerImage;
-            if (dropIconTexture > -1)
+            if (_dropIconTexture > -1)
             {
-                string filename = TextureFile.IndexToFileName(dropIconArchive);
-                containerImage = ImageReader.GetImageData(filename, DaggerfallLootDataTables.dropIconIdxs[dropIconArchive][dropIconTexture], 0, true);
+                string filename = TextureFile.IndexToFileName(_dropIconArchive);
+                containerImage = ImageReader.GetImageData(filename, DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive][_dropIconTexture], 0, true);
             }
             else if (lootTarget != null && lootTarget.TextureArchive > 0)
             {
@@ -812,8 +812,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             wagonSelected = ImageReader.GetSubTexture(goldTexture, wagonButtonRect, baseSize);
             wagonNotSelected = ImageReader.GetSubTexture(baseTexture, wagonButtonRect, baseSize);
 
-            remoteSelected = ImageReader.GetSubTexture(goldTexture, remoteButtonRect, baseSize);
-            remoteNotSelected = ImageReader.GetSubTexture(baseTexture, remoteButtonRect, baseSize);
+            remoteSelected = ImageReader.GetSubTexture(goldTexture, _remoteButtonRect, baseSize);
+            remoteNotSelected = ImageReader.GetSubTexture(baseTexture, _remoteButtonRect, baseSize);
 
             // Load coins animation textures
             coinsAnimation = ImageReader.GetImageData(coinsAnimTextureName, 6, 0, true, false, true);
@@ -828,7 +828,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 // Save current target and switch to wagon
                 wagonButton.BackgroundTexture = wagonSelected;
-                remoteButton.BackgroundTexture = remoteNotSelected;
+                _remoteButton.BackgroundTexture = remoteNotSelected;
                 lastRemoteItems = remoteItems;
                 lastRemoteTargetType = remoteTargetType;
                 remoteItems = PlayerEntity.WagonItems;
@@ -837,7 +837,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 // Restore previous target or default to dropped items
                 wagonButton.BackgroundTexture = wagonNotSelected;
-                remoteButton.BackgroundTexture = remoteSelected;
+                _remoteButton.BackgroundTexture = remoteSelected;
                 if (lastRemoteItems != null)
                 {
                     remoteItems = lastRemoteItems;
@@ -923,8 +923,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 if (CanChangeDropIcon())
                 {
-                    dropIconArchive = GetNextArchive();
-                    dropIconTexture = 0;
+                    _dropIconArchive = GetNextArchive();
+                    _dropIconTexture = 0;
                     UpdateRemoteTargetIcon();
                 }
             }
@@ -939,9 +939,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 if (CanChangeDropIcon())
                 {
-                    dropIconTexture++;
-                    if (dropIconTexture >= DaggerfallLootDataTables.dropIconIdxs[dropIconArchive].Length)
-                        dropIconTexture = 0;
+                    _dropIconTexture++;
+                    if (_dropIconTexture >= DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive].Length)
+                        _dropIconTexture = 0;
                     UpdateRemoteTargetIcon();
                 }
             }
@@ -957,9 +957,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 if (CanChangeDropIcon())
                 {
-                    dropIconTexture--;
-                    if (dropIconTexture < 0)
-                        dropIconTexture = DaggerfallLootDataTables.dropIconIdxs[dropIconArchive].Length - 1;
+                    _dropIconTexture--;
+                    if (_dropIconTexture < 0)
+                        _dropIconTexture = DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive].Length - 1;
                     UpdateRemoteTargetIcon();
                 }
             }
@@ -1022,7 +1022,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             // Create new item for gold pieces and add to other container
             DaggerfallUnityItem goldPieces = ItemBuilder.CreateGoldPieces(goldToDrop);
-            remoteItems.AddItem(goldPieces, preferredOrder);
+            remoteItems.AddItem(goldPieces, _preferredOrder);
 
             // Remove gold count from player
             GameManager.Instance.PlayerEntity.GoldPieces -= goldToDrop;
@@ -1081,11 +1081,11 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             // Handle stacks & splitting if needed
             if (maxAmount != -1)
-                this.maxAmount = maxAmount;
+                this._maxAmount = maxAmount;
             else
-                this.maxAmount = item.stackCount;
+                this._maxAmount = item.stackCount;
 
-            if (this.maxAmount <= 0)
+            if (this._maxAmount <= 0)
                 return;
 
             bool splitRequired = maxAmount < item.stackCount && item.stackCount > 1;
@@ -1095,15 +1095,15 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 if (allowSplitting && item.IsAStack())
                 {
-                    stackItem = item;
-                    stackFrom = from;
-                    stackTo = to;
-                    stackEquip = equip;
-                    string defaultValue = controlPressed ? "0" : this.maxAmount.ToString();
+                    _stackItem = item;
+                    _stackFrom = from;
+                    _stackTo = to;
+                    _stackEquip = equip;
+                    string defaultValue = controlPressed ? "0" : this._maxAmount.ToString();
 
                     // Show message box
                     DaggerfallInputMessageBox mb = new DaggerfallInputMessageBox(uiManager, this);
-                    mb.SetTextBoxLabel(String.Format(TextManager.Instance.GetLocalizedText("howManyItems"), this.maxAmount));
+                    mb.SetTextBoxLabel(String.Format(TextManager.Instance.GetLocalizedText("howManyItems"), this._maxAmount));
                     mb.TextPanelDistanceY = 0;
                     mb.InputDistanceX = 15;
                     mb.TextBox.Numeric = true;
@@ -1173,12 +1173,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             // Determine how many items to split
             int count = 0;
             bool result = int.TryParse(input, out count);
-            if (!result || count > maxAmount)
+            if (!result || count > _maxAmount)
                 return;
 
-            DaggerfallUnityItem item = stackFrom.SplitStack(stackItem, count);
+            DaggerfallUnityItem item = _stackFrom.SplitStack(_stackItem, count);
             if (item != null)
-                DoTransferItem(item, stackFrom, stackTo, stackEquip);
+                DoTransferItem(item, _stackFrom, _stackTo, _stackEquip);
             else
                 Refresh(false);
         }
@@ -1422,7 +1422,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 if (next)
                     return ai;
-                next = (ai == dropIconArchive);
+                next = (ai == _dropIconArchive);
             }
             return DaggerfallLootDataTables.dropIconIdxs.Keys.First();
         }

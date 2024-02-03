@@ -9,10 +9,10 @@ using DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings;
 
 public class UncannyUILoader : MonoBehaviour
 {
-    internal const string TexturesFolder = "UI";
-    public static Mod mod { get; private set; }
+    internal const string _texturesFolder = "UI";
+    public static Mod Mod { get; private set; }
 
-    static UncannyUILoader instance;
+    static UncannyUILoader _instance;
 
     protected readonly string DialougeString = "uncanny_dialouge";
     protected readonly string InventoryString = "uncanny_inventory";
@@ -23,31 +23,31 @@ public class UncannyUILoader : MonoBehaviour
     protected readonly string SellOverlayHighlightString = "uncanny_sell_overlayh";
     protected readonly string RestString = "uncanny_rest";
 
-    private Color defaultColor = new Color32(243, 239, 44, 255);
+    private Color _defaultColor = new Color32(243, 239, 44, 255);
 
 
     public static UncannyUILoader Instance
     {
-        get { return instance ?? (instance = FindObjectOfType<UncannyUILoader>()); }
+        get { return _instance != null ? _instance : (_instance = FindObjectOfType<UncannyUILoader>()); }
     }
 
     public Color DefaultColor()
     {
-        return defaultColor;
+        return _defaultColor;
     }
 
     public Mod GetMod()
     {
-        return mod;
+        return Mod;
     }
 
     // Use this for initialization
     [Invoke(StateManager.StateTypes.Start, 0)]
     public static void Init(InitParams initParams)
     {
-        mod = initParams.Mod;  // Get mod
+        Mod = initParams.Mod;  // Get mod
 
-        var settings = mod.GetSettings();
+        var settings = Mod.GetSettings();
 
         bool dialogueWindowEnabled = settings.GetBool("Dialogue", "Enabled");
         bool inventoryWindowEnabled = settings.GetBool("Inventory", "Enabled");
@@ -69,14 +69,14 @@ public class UncannyUILoader : MonoBehaviour
         }
            
 
-        instance = new GameObject("UncannyUI").AddComponent<UncannyUILoader>(); // Add script to the scene.
-        instance.defaultColor = settings.GetColor("Common", "DefaultColor");
+        _instance = new GameObject("UncannyUI").AddComponent<UncannyUILoader>(); // Add script to the scene.
+        _instance._defaultColor = settings.GetColor("Common", "DefaultColor");
     }
 
 
     public DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ModSettings GetModSettings()
     {
-        return mod.GetSettings();
+        return Mod.GetSettings();
     }
 
     public Texture2D LoadDialougeUI()
@@ -123,10 +123,10 @@ public class UncannyUILoader : MonoBehaviour
     {
         Texture2D tex;
 
-        TextureReplacement.TryImportTextureFromLooseFiles(Path.Combine(TexturesFolder, name), false, false, false, out tex);
+        TextureReplacement.TryImportTextureFromLooseFiles(Path.Combine(_texturesFolder, name), false, false, false, out tex);
 
         if(tex == null)
-            tex = mod.GetAsset<Texture2D>(name);
+            tex = Mod.GetAsset<Texture2D>(name);
 
         tex.filterMode = FilterMode.Point;
 

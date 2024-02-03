@@ -15,23 +15,23 @@ namespace DaggerfallWorkshop.Game.UserInterface
             Right = 3,
         }
 
-        const int MainPanelWidth = 310;
+        const int _mainPanelWidth = 310;
 
-        List<TalkManager.ListItem> listTopicMain;
-        List<TalkManager.ListItem> listTopicCurrentEvents;
+        List<TalkManager.ListItem> _listTopicMain;
+        List<TalkManager.ListItem> _listTopicCurrentEvents;
 
-        TextLabel labelTonePolite;
-        TextLabel labelToneNormal;
-        TextLabel labelToneBlunt;
-        TextLabel labelCopyMSG;
+        TextLabel _labelTonePolite;
+        TextLabel _labelToneNormal;
+        TextLabel _labelToneBlunt;
+        TextLabel _labelCopyMSG;
 
-        float drawCopyMSGTime;
-        Panel panelCopyMSG;
+        float _drawCopyMSGTime;
+        Panel _panelCopyMSG;
 
-        int lastHover = -1;
+        int _lastHover = -1;
 
-        int portraitPosition = 0;
-        int portraitSize = 32;
+        int _portraitPosition = 0;
+        int _portraitSize = 32;
 
         protected readonly string GoodByeSring = UncannyUILoader.Instance.GetMod().Localize("Goodbye");
         protected readonly string LabelToneStringPolite = UncannyUILoader.Instance.GetMod().Localize("Polite");
@@ -117,34 +117,53 @@ namespace DaggerfallWorkshop.Game.UserInterface
             textureBackground.filterMode = DaggerfallUI.Instance.GlobalFilterMode;
             mainPanel = DaggerfallUI.AddPanel(NativePanel, AutoSizeModes.None);
             mainPanel.BackgroundTexture = textureBackground;
-            mainPanel.Size = new Vector2(MainPanelWidth, 102); // reference size is always vanilla df resolution
+            mainPanel.Size = new Vector2(_mainPanelWidth, 102); // reference size is always vanilla df resolution
             mainPanel.HorizontalAlignment = HorizontalAlignment.Center;
             mainPanel.VerticalAlignment = VerticalAlignment.Bottom;
 
-            portraitPosition = UncannyUILoader.Instance.GetModSettings().GetInt("Dialogue", "PortraitPosition");
-            portraitSize = UncannyUILoader.Instance.GetModSettings().GetInt("Dialogue", "PortraitSize");
+            // Attempt to restore hotkeys
+            buttonGoodbye = new Button();
+            buttonGoodbye.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.TalkExit);
+            buttonGoodbye.OnKeyboardEvent += ButtonGoodbye_OnKeyboardEvent;
+            mainPanel.Components.Add(buttonGoodbye);
 
-            if (portraitPosition > 0)
+            buttonCheckboxTonePolite = new Button();
+            buttonCheckboxTonePolite.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.TalkTonePolite);
+            buttonCheckboxTonePolite.OnMouseClick += ButtonTonePolite_OnClickHandler;
+
+            buttonCheckboxToneNormal = new Button();
+            buttonCheckboxToneNormal.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.TalkToneNormal);
+            buttonCheckboxToneNormal.OnMouseClick += ButtonToneNormal_OnClickHandler;
+
+            buttonCheckboxToneBlunt = new Button();
+            buttonCheckboxToneBlunt.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.TalkToneBlunt);
+            buttonCheckboxToneBlunt.OnMouseClick += ButtonToneBlunt_OnClickHandler;
+            ////
+
+            _portraitPosition = UncannyUILoader.Instance.GetModSettings().GetInt("Dialogue", "PortraitPosition");
+            _portraitSize = UncannyUILoader.Instance.GetModSettings().GetInt("Dialogue", "PortraitSize");
+
+            if (_portraitPosition > 0)
             {
                 int portraitPos = 5;
 
-                switch (portraitPosition)
+                switch (_portraitPosition)
                 {
                     case (int)PortraitPosition.Right:
-                        portraitPos = MainPanelWidth - portraitSize;
+                        portraitPos = _mainPanelWidth - _portraitSize;
                         break;
                     case (int)PortraitPosition.Left:
                         portraitPos = 0;
                         break;
                     case (int)PortraitPosition.Center:
-                        portraitPos = 155 - (portraitSize / 2);
+                        portraitPos = 155 - (_portraitSize / 2);
                         break;
                     default:
                         break;
                 }
 
-                panelPortraitPos = new Vector2(portraitPos, -portraitSize + 6);
-                panelPortraitSize = new Vector2(portraitSize, portraitSize);
+                panelPortraitPos = new Vector2(portraitPos, -_portraitSize + 6);
+                panelPortraitSize = new Vector2(_portraitSize, _portraitSize);
                 panelPortrait = DaggerfallUI.AddPanel(new Rect(panelPortraitPos, panelPortraitSize), mainPanel);
                 panelPortrait.BackgroundTexture = texturePortrait;
             }
@@ -153,28 +172,32 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
             int NPCNamePanelWidth = 128;
 
-            panelNameNPC.Position = portraitPosition == (int)PortraitPosition.Right
-                ? new Vector2(MainPanelWidth - NPCNamePanelWidth - portraitSize - 5, -1)
-                : new Vector2(MainPanelWidth - NPCNamePanelWidth - 1, -1);
+            panelNameNPC.Position = _portraitPosition == (int)PortraitPosition.Right
+                ? new Vector2(_mainPanelWidth - NPCNamePanelWidth - _portraitSize - 5, -1)
+                : new Vector2(_mainPanelWidth - NPCNamePanelWidth - 1, -1);
 
             panelNameNPC.Size = new Vector2(NPCNamePanelWidth, 10);
 
-            labelNameNPC = new TextLabel();
-            labelNameNPC.Position = new Vector2(0, 0);
-            labelNameNPC.Size = new Vector2(NPCNamePanelWidth, 10);
-            labelNameNPC.Name = "label_npcName";
-            labelNameNPC.MaxCharacters = -1;
-            labelNameNPC.HorizontalAlignment = HorizontalAlignment.Right;
-            labelNameNPC.VerticalAlignment = VerticalAlignment.Top;
-            labelNameNPC.TextColor = UncannyUILoader.Instance.DefaultColor();
+            labelNameNPC = new TextLabel
+            {
+                Position = new Vector2(0, 0),
+                Size = new Vector2(NPCNamePanelWidth, 10),
+                Name = "label_npcName",
+                MaxCharacters = -1,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextColor = UncannyUILoader.Instance.DefaultColor()
+            };
             panelNameNPC.Components.Add(labelNameNPC);
 
             UpdateNameNPC();
 
-            textlabelPlayerSays = new TextLabel();
-            textlabelPlayerSays.Position = new Vector2(116, 75);
-            textlabelPlayerSays.Size = new Vector2(124, 38);
-            textlabelPlayerSays.Name = "label_player_says";
+            textlabelPlayerSays = new TextLabel
+            {
+                Position = new Vector2(116, 75),
+                Size = new Vector2(124, 38),
+                Name = "label_player_says"
+            };
             textlabelPlayerSays.MaxWidth = (int)textlabelPlayerSays.Size.x;
             textlabelPlayerSays.MaxCharacters = -1;
             textlabelPlayerSays.WrapText = true;
@@ -220,32 +243,38 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
             mainPanel.Components.Add(listboxConversation);
 
-            labelTonePolite = new TextLabel();
-            labelTonePolite.Position = new Vector2(260, 76);
-            labelTonePolite.Size = new Vector2(197, 8);
-            labelTonePolite.Text = LabelToneStringPolite;
-            labelTonePolite.MaxCharacters = -1;
-            labelTonePolite.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _labelTonePolite = new TextLabel
+            {
+                Position = new Vector2(260, 76),
+                Size = new Vector2(197, 8),
+                Text = LabelToneStringPolite,
+                MaxCharacters = -1,
+                TextColor = UncannyUILoader.Instance.DefaultColor()
+            };
 
-            mainPanel.Components.Add(labelTonePolite);
+            mainPanel.Components.Add(_labelTonePolite);
 
-            labelToneNormal = new TextLabel();
-            labelToneNormal.Position = new Vector2(260, 84);
-            labelToneNormal.Size = new Vector2(197, 8);
-            labelToneNormal.Text = LabelToneStringNormal;
-            labelToneNormal.MaxCharacters = -1;
-            labelToneNormal.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _labelToneNormal = new TextLabel
+            {
+                Position = new Vector2(260, 84),
+                Size = new Vector2(197, 8),
+                Text = LabelToneStringNormal,
+                MaxCharacters = -1,
+                TextColor = UncannyUILoader.Instance.DefaultColor()
+            };
 
-            mainPanel.Components.Add(labelToneNormal);
+            mainPanel.Components.Add(_labelToneNormal);
 
-            labelToneBlunt = new TextLabel();
-            labelToneBlunt.Position = new Vector2(260, 92);
-            labelToneBlunt.Size = new Vector2(197, 8);
-            labelToneBlunt.Text = LabelToneStringBlunt;
-            labelToneBlunt.MaxCharacters = -1;
-            labelToneBlunt.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _labelToneBlunt = new TextLabel
+            {
+                Position = new Vector2(260, 92),
+                Size = new Vector2(197, 8),
+                Text = LabelToneStringBlunt,
+                MaxCharacters = -1,
+                TextColor = UncannyUILoader.Instance.DefaultColor()
+            };
 
-            mainPanel.Components.Add(labelToneBlunt);
+            mainPanel.Components.Add(_labelToneBlunt);
 
             rectButtonTonePolite = new Rect(257, 174, 4, 4);
             rectButtonToneNormal = new Rect(257, 182, 4, 4);
@@ -256,23 +285,25 @@ namespace DaggerfallWorkshop.Game.UserInterface
             panelToneBluntPos = new Vector2(257, 190);
             panelToneSize = new Vector2(4f, 4f);
 
-            panelCopyMSG = DaggerfallUI.AddPanel(mainPanel, AutoSizeModes.None);
-            panelCopyMSG.Position = new Vector2(0, 0);
-            panelCopyMSG.HorizontalAlignment = HorizontalAlignment.Center;
-            panelCopyMSG.VerticalAlignment = VerticalAlignment.Middle;
-            panelCopyMSG.Size = new Vector2(64, 10);
-            panelCopyMSG.BackgroundColor = new Color(0, 0, 0, 0.75f);
-            panelCopyMSG.SetFocus();
+            _panelCopyMSG = DaggerfallUI.AddPanel(mainPanel, AutoSizeModes.None);
+            _panelCopyMSG.Position = new Vector2(0, 0);
+            _panelCopyMSG.HorizontalAlignment = HorizontalAlignment.Center;
+            _panelCopyMSG.VerticalAlignment = VerticalAlignment.Middle;
+            _panelCopyMSG.Size = new Vector2(64, 10);
+            _panelCopyMSG.BackgroundColor = new Color(0, 0, 0, 0.75f);
+            _panelCopyMSG.SetFocus();
 
-            labelCopyMSG = new TextLabel();
-            labelCopyMSG.Position = new Vector2(0, 0);
-            labelCopyMSG.Size = new Vector2(64, 10);
-            labelCopyMSG.Text = CopyToLogString;
-            labelCopyMSG.MaxCharacters = -1;
-            labelCopyMSG.HorizontalAlignment = HorizontalAlignment.Center;
-            labelCopyMSG.VerticalAlignment = VerticalAlignment.Middle;
-            panelCopyMSG.Components.Add(labelCopyMSG);
-            panelCopyMSG.Enabled = false;
+            _labelCopyMSG = new TextLabel
+            {
+                Position = new Vector2(0, 0),
+                Size = new Vector2(64, 10),
+                Text = CopyToLogString,
+                MaxCharacters = -1,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Middle
+            };
+            _panelCopyMSG.Components.Add(_labelCopyMSG);
+            _panelCopyMSG.Enabled = false;
 
             SetStartConversation();
             SetupCheckboxes();
@@ -290,55 +321,55 @@ namespace DaggerfallWorkshop.Game.UserInterface
             ////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////
 
-            listTopicCurrentEvents = new List<TalkManager.ListItem>();
-            listTopicCurrentEvents.Clear();
-            listTopicCurrentEvents.Add(new TalkManager.ListItem());
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].caption = TopicWhereString;
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.WhereAmI;
+            _listTopicCurrentEvents = new List<TalkManager.ListItem>();
+            _listTopicCurrentEvents.Clear();
+            _listTopicCurrentEvents.Add(new TalkManager.ListItem());
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].caption = TopicWhereString;
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.WhereAmI;
 
-            listTopicCurrentEvents.Add(new TalkManager.ListItem());
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].caption = TopicWorkString;
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.Work;
+            _listTopicCurrentEvents.Add(new TalkManager.ListItem());
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].caption = TopicWorkString;
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.Work;
 
-            listTopicCurrentEvents.Add(new TalkManager.ListItem());
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].caption = TopicNewsString;
-            listTopicCurrentEvents[listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.News;
+            _listTopicCurrentEvents.Add(new TalkManager.ListItem());
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].caption = TopicNewsString;
+            _listTopicCurrentEvents[_listTopicCurrentEvents.Count - 1].questionType = TalkManager.QuestionType.News;
 
             ////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////
 
-            listTopicMain = new List<TalkManager.ListItem>();
-            listTopicMain.Clear();
+            _listTopicMain = new List<TalkManager.ListItem>();
+            _listTopicMain.Clear();
 
-            listTopicMain.Add(new TalkManager.ListItem());
-            listTopicMain[listTopicMain.Count - 1].caption = TopicEventsString;
-            listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-            listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
-            listTopicMain[listTopicMain.Count - 1].listChildItems = listTopicCurrentEvents;
+            _listTopicMain.Add(new TalkManager.ListItem());
+            _listTopicMain[_listTopicMain.Count - 1].caption = TopicEventsString;
+            _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+            _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
+            _listTopicMain[_listTopicMain.Count - 1].listChildItems = _listTopicCurrentEvents;
 
-            listTopicMain.Add(new TalkManager.ListItem());
-            listTopicMain[listTopicMain.Count - 1].caption = TopicFactionString;
-            listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-            listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
-            listTopicMain[listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicTellMeAbout;
+            _listTopicMain.Add(new TalkManager.ListItem());
+            _listTopicMain[_listTopicMain.Count - 1].caption = TopicFactionString;
+            _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+            _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
+            _listTopicMain[_listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicTellMeAbout;
 
-            listTopicMain.Add(new TalkManager.ListItem());
-            listTopicMain[listTopicMain.Count - 1].caption = TopicLocationString;
-            listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-            listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
-            listTopicMain[listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicLocation;
+            _listTopicMain.Add(new TalkManager.ListItem());
+            _listTopicMain[_listTopicMain.Count - 1].caption = TopicLocationString;
+            _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+            _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
+            _listTopicMain[_listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicLocation;
 
             if (TalkManager.Instance.ListTopicPerson.Count > 0)
             {
                 if (!(TalkManager.Instance.ListTopicPerson.Count == 1 && TalkManager.Instance.ListTopicPerson[0].type
                      == TalkManager.ListItemType.NavigationBack))
                 {
-                    listTopicMain.Add(new TalkManager.ListItem());
-                    listTopicMain[listTopicMain.Count - 1].caption = TopicPeopleString;
-                    listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-                    listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
-                    listTopicMain[listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicPerson;
+                    _listTopicMain.Add(new TalkManager.ListItem());
+                    _listTopicMain[_listTopicMain.Count - 1].caption = TopicPeopleString;
+                    _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+                    _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
+                    _listTopicMain[_listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicPerson;
                 }
             }
 
@@ -347,18 +378,18 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 if (!(TalkManager.Instance.ListTopicThings.Count == 1 && TalkManager.Instance.ListTopicThings[0].type
                     == TalkManager.ListItemType.NavigationBack))
                 {
-                    listTopicMain.Add(new TalkManager.ListItem());
-                    listTopicMain[listTopicMain.Count - 1].caption = TopicThingsString;
-                    listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-                    listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
-                    listTopicMain[listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicThings;
+                    _listTopicMain.Add(new TalkManager.ListItem());
+                    _listTopicMain[_listTopicMain.Count - 1].caption = TopicThingsString;
+                    _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+                    _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.ItemGroup;
+                    _listTopicMain[_listTopicMain.Count - 1].listChildItems = TalkManager.Instance.ListTopicThings;
                 }
             }
 
-            listTopicMain.Add(new TalkManager.ListItem());
-            listTopicMain[listTopicMain.Count - 1].caption = GoodByeSring;
-            listTopicMain[listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
-            listTopicMain[listTopicMain.Count - 1].type = TalkManager.ListItemType.Item;
+            _listTopicMain.Add(new TalkManager.ListItem());
+            _listTopicMain[_listTopicMain.Count - 1].caption = GoodByeSring;
+            _listTopicMain[_listTopicMain.Count - 1].questionType = TalkManager.QuestionType.NoQuestion;
+            _listTopicMain[_listTopicMain.Count - 1].type = TalkManager.ListItemType.Item;
 
             /////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////
@@ -370,14 +401,14 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 TalkManager.Instance.ListTopicPerson.Insert(0, new TalkManager.ListItem());
                 TalkManager.Instance.ListTopicPerson[0].type = TalkManager.ListItemType.NavigationBack;
                 TalkManager.Instance.ListTopicPerson[0].caption = TopicPreviousString;
-                TalkManager.Instance.ListTopicPerson[0].listParentItems = listTopicMain;
+                TalkManager.Instance.ListTopicPerson[0].listParentItems = _listTopicMain;
             }
             else if (TalkManager.Instance.ListTopicPerson[0].type != TalkManager.ListItemType.NavigationBack)
             {
                 TalkManager.Instance.ListTopicPerson.Insert(0, new TalkManager.ListItem());
                 TalkManager.Instance.ListTopicPerson[0].type = TalkManager.ListItemType.NavigationBack;
                 TalkManager.Instance.ListTopicPerson[0].caption = TopicPreviousString;
-                TalkManager.Instance.ListTopicPerson[0].listParentItems = listTopicMain;
+                TalkManager.Instance.ListTopicPerson[0].listParentItems = _listTopicMain;
             }
             if (TalkManager.Instance.ListTopicThings != null)
             {
@@ -386,7 +417,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                     TalkManager.Instance.ListTopicThings.Insert(0, new TalkManager.ListItem());
                     TalkManager.Instance.ListTopicThings[0].type = TalkManager.ListItemType.NavigationBack;
                     TalkManager.Instance.ListTopicThings[0].caption = TopicPreviousString;
-                    TalkManager.Instance.ListTopicThings[0].listParentItems = listTopicMain;
+                    TalkManager.Instance.ListTopicThings[0].listParentItems = _listTopicMain;
                 }
 
                 else if (TalkManager.Instance.ListTopicThings[0].type != TalkManager.ListItemType.NavigationBack)
@@ -394,7 +425,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                     TalkManager.Instance.ListTopicThings.Insert(0, new TalkManager.ListItem());
                     TalkManager.Instance.ListTopicThings[0].type = TalkManager.ListItemType.NavigationBack;
                     TalkManager.Instance.ListTopicThings[0].caption = TopicPreviousString;
-                    TalkManager.Instance.ListTopicThings[0].listParentItems = listTopicMain;
+                    TalkManager.Instance.ListTopicThings[0].listParentItems = _listTopicMain;
                 }
             }
 
@@ -402,12 +433,12 @@ namespace DaggerfallWorkshop.Game.UserInterface
             ////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////
 
-            if (listTopicCurrentEvents[0].type != TalkManager.ListItemType.NavigationBack)
+            if (_listTopicCurrentEvents[0].type != TalkManager.ListItemType.NavigationBack)
             {
-                listTopicCurrentEvents.Insert(0, new TalkManager.ListItem());
-                listTopicCurrentEvents[0].type = TalkManager.ListItemType.NavigationBack;
-                listTopicCurrentEvents[0].caption = TopicPreviousString;
-                listTopicCurrentEvents[0].listParentItems = listTopicMain;
+                _listTopicCurrentEvents.Insert(0, new TalkManager.ListItem());
+                _listTopicCurrentEvents[0].type = TalkManager.ListItemType.NavigationBack;
+                _listTopicCurrentEvents[0].caption = TopicPreviousString;
+                _listTopicCurrentEvents[0].listParentItems = _listTopicMain;
             }
 
             if (TalkManager.Instance.ListTopicTellMeAbout[0].type != TalkManager.ListItemType.NavigationBack)
@@ -415,7 +446,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 TalkManager.Instance.ListTopicTellMeAbout.Insert(0, new TalkManager.ListItem());
                 TalkManager.Instance.ListTopicTellMeAbout[0].type = TalkManager.ListItemType.NavigationBack;
                 TalkManager.Instance.ListTopicTellMeAbout[0].caption = TopicPreviousString;
-                TalkManager.Instance.ListTopicTellMeAbout[0].listParentItems = listTopicMain;
+                TalkManager.Instance.ListTopicTellMeAbout[0].listParentItems = _listTopicMain;
             }
 
             for (int i = 0; i < TalkManager.Instance.ListTopicTellMeAbout.Count; i++)
@@ -442,7 +473,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 TalkManager.Instance.ListTopicLocation.Insert(0, new TalkManager.ListItem());
                 TalkManager.Instance.ListTopicLocation[0].type = TalkManager.ListItemType.NavigationBack;
                 TalkManager.Instance.ListTopicLocation[0].caption = TopicPreviousString;
-                TalkManager.Instance.ListTopicLocation[0].listParentItems = listTopicMain;
+                TalkManager.Instance.ListTopicLocation[0].listParentItems = _listTopicMain;
             }
         }
 
@@ -460,7 +491,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
             if (!copyIndexes.Contains(listboxConversation.SelectedIndex))
             {
                 copyIndexes.Add(listboxConversation.SelectedIndex);
-                drawCopyMSGTime = 1;
+                _drawCopyMSGTime = 1;
             }
             else
             {
@@ -490,16 +521,16 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
         public override void Update()
         {
-            if (panelCopyMSG != null)
+            if (_panelCopyMSG != null)
             {
-                if (drawCopyMSGTime > 0)
+                if (_drawCopyMSGTime > 0)
                 {
-                    drawCopyMSGTime -= Time.unscaledDeltaTime;
-                    panelCopyMSG.Enabled = true;
+                    _drawCopyMSGTime -= Time.unscaledDeltaTime;
+                    _panelCopyMSG.Enabled = true;
                 }
-                else if (panelCopyMSG.Enabled)
+                else if (_panelCopyMSG.Enabled)
                 {
-                    panelCopyMSG.Enabled = false;
+                    _panelCopyMSG.Enabled = false;
                 }
             }
             base.Update();
@@ -593,7 +624,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         void SetTalkCategoryMain()
         {
             SetupTopics();
-            SetListboxTopics(ref listboxTopic, listTopicMain);
+            SetListboxTopics(ref listboxTopic, _listTopicMain);
             listboxTopic.Update();
             UpdateScrollBarsTopic();
         }
@@ -703,28 +734,28 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 mouseHoverElement = -1;
             }
 
-            if (mouseHoverElement != lastHover)
+            if (mouseHoverElement != _lastHover)
             {
                 UpdateQuestion(mouseHoverElement);
-                lastHover = mouseHoverElement;
+                _lastHover = mouseHoverElement;
             }
         }
 
         private void ListboxTopic_OnMouseClick(BaseScreenComponent sender, Vector2 pos)
         {
             //If the last hover was outside, make a attempt to grab what the player is pressing on
-            if (lastHover < 0 || lastHover >= listboxTopic.Count)
+            if (_lastHover < 0 || _lastHover >= listboxTopic.Count)
             {
                 int mouseHoverElement = (int)((pos.y + verticalScrollBarTopic.ScrollIndex) / 7);
 
                 if (mouseHoverElement >= 0 && mouseHoverElement < listboxTopic.Count)
                 {
-                    lastHover = mouseHoverElement;
-                    UpdateQuestion(lastHover);  //Remove question
+                    _lastHover = mouseHoverElement;
+                    UpdateQuestion(_lastHover);  //Remove question
                 }
             }
 
-            if (inListboxTopicContentUpdate == true || lastHover < 0 || lastHover >= listboxTopic.Count)
+            if (inListboxTopicContentUpdate == true || _lastHover < 0 || _lastHover >= listboxTopic.Count)
             {
                 inListboxTopicContentUpdate = false;
                 return;
@@ -738,12 +769,12 @@ namespace DaggerfallWorkshop.Game.UserInterface
             }
 
             //Handle Goodbye
-            if (listCurrentTopics[lastHover].caption == GoodByeSring)
+            if (listCurrentTopics[_lastHover].caption == GoodByeSring)
             {
                 CloseWindow();
             }
 
-            TalkManager.ListItem listItem = listCurrentTopics[lastHover];
+            TalkManager.ListItem listItem = listCurrentTopics[_lastHover];
 
             if (listItem.type == TalkManager.ListItemType.NavigationBack)
             {
@@ -751,8 +782,8 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 {
                     SetListboxTopics(ref listboxTopic, listItem.listParentItems);
                     DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
-                    lastHover = -1;
-                    UpdateQuestion(lastHover); //Remove question
+                    _lastHover = -1;
+                    UpdateQuestion(_lastHover); //Remove question
                 }
             }
             else if (listItem.type == TalkManager.ListItemType.ItemGroup)
@@ -761,8 +792,8 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 {
                     SetListboxTopics(ref listboxTopic, listItem.listChildItems);
                     DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
-                    lastHover = -1;
-                    UpdateQuestion(lastHover);  //Remove question
+                    _lastHover = -1;
+                    UpdateQuestion(_lastHover);  //Remove question
                 }
             }
             else if (listItem.type == TalkManager.ListItemType.Item)
@@ -835,7 +866,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 return;
             toneLastUsed = TalkToneToIndex(selectedTalkTone);
             UpdateCheckboxes();
-            UpdateQuestion(lastHover);
+            UpdateQuestion(_lastHover);
         }
 
         protected override void ButtonToneNormal_OnClickHandler(BaseScreenComponent sender, Vector2 position)
@@ -846,7 +877,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 return;
             toneLastUsed = TalkToneToIndex(selectedTalkTone);
             UpdateCheckboxes();
-            UpdateQuestion(lastHover);
+            UpdateQuestion(_lastHover);
         }
 
         protected override void ButtonToneBlunt_OnClickHandler(BaseScreenComponent sender, Vector2 position)
@@ -857,7 +888,21 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 return;
             toneLastUsed = TalkToneToIndex(selectedTalkTone);
             UpdateCheckboxes();
-            UpdateQuestion(lastHover);
+            UpdateQuestion(_lastHover);
+        }
+
+        protected override void ButtonGoodbye_OnKeyboardEvent(BaseScreenComponent sender, Event keyboardEvent)
+        {
+            if (keyboardEvent.type == EventType.KeyDown)
+            {
+                DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
+                isCloseWindowDeferred = true;
+            }
+            else if (keyboardEvent.type == EventType.KeyUp && isCloseWindowDeferred)
+            {
+                isCloseWindowDeferred = false;
+                CloseWindow();
+            }
         }
     }
 }

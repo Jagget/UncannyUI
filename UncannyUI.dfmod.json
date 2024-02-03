@@ -1,7 +1,8 @@
 {
     "ModTitle": "UncannyUI",
-    "ModVersion": "1.5",
+    "ModVersion": "1.6",
     "ModAuthor": "Uncanny (updated by Jagget)",
+    "ContactInfo": "https://forums.dfworkshop.net",
     "DFUnity_Version": "1.0.0",
     "ModDescription": "Improves and changes the Daggerfall UI while still keeping the style of the original\r",
     "GUID": "445aa4d3-6912-4c0d-bd92-d642bedca901",
