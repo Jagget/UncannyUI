@@ -1,9 +1,12 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using DaggerfallWorkshop;
+using DaggerfallWorkshop.Game;
+using DaggerfallWorkshop.Game.UserInterface;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
 
-namespace DaggerfallWorkshop.Game.UserInterface
+namespace Game.Mods.UncannyUI.Scripts
 {
     public class UncannyTalkWindow : DaggerfallTalkWindow
     {
@@ -60,7 +63,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         {
             // Racial override can suppress talk
             // We still setup and push window normally, actual suppression is done in Update()
-            MagicAndEffects.MagicEffects.RacialOverrideEffect racialOverride = GameManager.Instance.PlayerEffectManager.GetRacialOverrideEffect();
+            var racialOverride = GameManager.Instance.PlayerEffectManager.GetRacialOverrideEffect();
             if (racialOverride != null)
                 suppressTalk = racialOverride.GetSuppressTalk(out suppressTalkMessage);
 
@@ -145,7 +148,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
             if (_portraitPosition > 0)
             {
-                int portraitPos = 5;
+                var portraitPos = 5;
 
                 switch (_portraitPosition)
                 {
@@ -170,7 +173,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
             panelNameNPC = DaggerfallUI.AddPanel(mainPanel, AutoSizeModes.None);
 
-            int NPCNamePanelWidth = 128;
+            var NPCNamePanelWidth = 128;
 
             panelNameNPC.Position = _portraitPosition == (int)PortraitPosition.Right
                 ? new Vector2(_mainPanelWidth - NPCNamePanelWidth - _portraitSize - 5, -1)
@@ -363,7 +366,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
             if (TalkManager.Instance.ListTopicPerson.Count > 0)
             {
                 if (!(TalkManager.Instance.ListTopicPerson.Count == 1 && TalkManager.Instance.ListTopicPerson[0].type
-                     == TalkManager.ListItemType.NavigationBack))
+                        == TalkManager.ListItemType.NavigationBack))
                 {
                     _listTopicMain.Add(new TalkManager.ListItem());
                     _listTopicMain[_listTopicMain.Count - 1].caption = TopicPeopleString;
@@ -376,7 +379,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
             if (TalkManager.Instance.ListTopicThings != null && TalkManager.Instance.ListTopicThings.Count > 0)
             {
                 if (!(TalkManager.Instance.ListTopicThings.Count == 1 && TalkManager.Instance.ListTopicThings[0].type
-                    == TalkManager.ListItemType.NavigationBack))
+                        == TalkManager.ListItemType.NavigationBack))
                 {
                     _listTopicMain.Add(new TalkManager.ListItem());
                     _listTopicMain[_listTopicMain.Count - 1].caption = TopicThingsString;
@@ -410,6 +413,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 TalkManager.Instance.ListTopicPerson[0].caption = TopicPreviousString;
                 TalkManager.Instance.ListTopicPerson[0].listParentItems = _listTopicMain;
             }
+
             if (TalkManager.Instance.ListTopicThings != null)
             {
                 if (TalkManager.Instance.ListTopicThings.Count == 0)
@@ -449,7 +453,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 TalkManager.Instance.ListTopicTellMeAbout[0].listParentItems = _listTopicMain;
             }
 
-            for (int i = 0; i < TalkManager.Instance.ListTopicTellMeAbout.Count; i++)
+            for (var i = 0; i < TalkManager.Instance.ListTopicTellMeAbout.Count; i++)
             {
                 if (TalkManager.Instance.ListTopicTellMeAbout[i].questionType == TalkManager.QuestionType.News)
                 {
@@ -479,7 +483,6 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
         public override void UpdateListboxTopic()
         {
-
         }
 
         private void ListboxConversation_OnMouseDoubleClick(BaseScreenComponent sender, Vector2 position)
@@ -516,6 +519,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                     textLabelNPCGreeting.textLabel.BackgroundColor = textcolorAnswerBackgroundModernConversationStyle;
                 }
             }
+
             TalkManager.Instance.StartNewConversation();
         }
 
@@ -533,6 +537,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                     _panelCopyMSG.Enabled = false;
                 }
             }
+
             base.Update();
         }
 
@@ -562,12 +567,12 @@ namespace DaggerfallWorkshop.Game.UserInterface
         protected override void UpdateScrollBarsTopic()
         {
             verticalScrollBarTopic.DisplayUnits = (int)listboxTopic.Size.y; //Math.Min(maxNumTopicsShown, listboxTopic.Count);
-            verticalScrollBarTopic.TotalUnits = listboxTopic.HeightContent();  //listboxTopic.Count;
+            verticalScrollBarTopic.TotalUnits = listboxTopic.HeightContent(); //listboxTopic.Count;
             verticalScrollBarTopic.ScrollIndex = 0;
             verticalScrollBarTopic.Update();
 
             horizontalSliderTopic.DisplayUnits = (int)listboxTopic.Size.x; //maxNumCharactersOfTopicShown;
-            horizontalSliderTopic.TotalUnits = listboxTopic.WidthContent();  //lengthOfLongestItemInListBox;
+            horizontalSliderTopic.TotalUnits = listboxTopic.WidthContent(); //lengthOfLongestItemInListBox;
             horizontalSliderTopic.ScrollIndex = 0;
             horizontalSliderTopic.Update();
         }
@@ -587,7 +592,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
             listCurrentTopics = listTopic;
             listboxTopic.ClearItems();
 
-            for (int i = 0; i < listTopic.Count; i++)
+            for (var i = 0; i < listTopic.Count; i++)
             {
                 TalkManager.ListItem item = listTopic[i];
                 ListBox.ListItem listboxItem;
@@ -601,6 +606,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 {
                     item.caption = TextManager.Instance.GetLocalizedText("resolvingError");
                 }
+
                 listboxTopic.AddItem(item.caption, out listboxItem);
 
                 if (item.type == TalkManager.ListItemType.NavigationBack)
@@ -636,7 +642,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         protected override int GetSafeScrollIndex(VerticalScrollBar scroller)
         {
             // Get current scroller index
-            int scrollIndex = scroller.ScrollIndex;
+            var scrollIndex = scroller.ScrollIndex;
             if (scrollIndex < 0)
                 scrollIndex = 0;
 
@@ -658,7 +664,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         protected override int GetSafeScrollIndex(HorizontalSlider slider)
         {
             // Get current scroller index
-            int sliderIndex = slider.ScrollIndex;
+            var sliderIndex = slider.ScrollIndex;
             if (sliderIndex < 0)
                 sliderIndex = 0;
 
@@ -708,6 +714,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
                 textLabelQuestion.textLabel.MaxWidth = (int)(textLabelQuestion.textLabel.MaxWidth * textBlockSizeModernConversationStyle);
                 textLabelQuestion.textLabel.BackgroundColor = textcolorQuestionBackgroundModernConversationStyle;
             }
+
             listboxConversation.AddItem(answer, out textLabelAnswer);
             textLabelAnswer.selectedTextColor = textcolorHighlighted;
             textLabelAnswer.textLabel.HorizontalAlignment = HorizontalAlignment.Right;
@@ -727,7 +734,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
         private void ListboxTopic_OnMouseMove(int x, int y)
         {
-            int mouseHoverElement = (y + verticalScrollBarTopic.ScrollIndex) / 7;
+            var mouseHoverElement = (y + verticalScrollBarTopic.ScrollIndex) / 7;
 
             if (mouseHoverElement < 0 || mouseHoverElement >= listboxTopic.Count)
             {
@@ -746,12 +753,12 @@ namespace DaggerfallWorkshop.Game.UserInterface
             //If the last hover was outside, make a attempt to grab what the player is pressing on
             if (_lastHover < 0 || _lastHover >= listboxTopic.Count)
             {
-                int mouseHoverElement = (int)((pos.y + verticalScrollBarTopic.ScrollIndex) / 7);
+                var mouseHoverElement = (int)((pos.y + verticalScrollBarTopic.ScrollIndex) / 7);
 
                 if (mouseHoverElement >= 0 && mouseHoverElement < listboxTopic.Count)
                 {
                     _lastHover = mouseHoverElement;
-                    UpdateQuestion(_lastHover);  //Remove question
+                    UpdateQuestion(_lastHover); //Remove question
                 }
             }
 
@@ -763,7 +770,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
             inListboxTopicContentUpdate = true;
 
-            for (int i = 0; i < listCurrentTopics.Count; i++)
+            for (var i = 0; i < listCurrentTopics.Count; i++)
             {
                 Debug.Log(i + " " + listCurrentTopics[i].caption);
             }
@@ -793,12 +800,12 @@ namespace DaggerfallWorkshop.Game.UserInterface
                     SetListboxTopics(ref listboxTopic, listItem.listChildItems);
                     DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
                     _lastHover = -1;
-                    UpdateQuestion(_lastHover);  //Remove question
+                    UpdateQuestion(_lastHover); //Remove question
                 }
             }
             else if (listItem.type == TalkManager.ListItemType.Item)
             {
-                string answer = TalkManager.Instance.GetAnswerText(listItem);
+                var answer = TalkManager.Instance.GetAnswerText(listItem);
                 SetQuestionAnswerPairInConversationListbox(currentQuestion, answer);
             }
 
@@ -814,7 +821,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         {
             // Update scroller
             verticalScrollBarTopic.TotalUnits = listboxTopic.HeightContent(); //listboxTopic.Count;
-            int scrollIndex = GetSafeScrollIndex(verticalScrollBarTopic);
+            var scrollIndex = GetSafeScrollIndex(verticalScrollBarTopic);
 
             listboxTopic.ScrollIndex = scrollIndex;
             listboxTopic.Update();
@@ -824,7 +831,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         {
             // Update scroller
             horizontalSliderTopic.TotalUnits = widthOfLongestItemInListBox; //lengthOfLongestItemInListBox;
-            int horizontalScrollIndex = GetSafeScrollIndex(horizontalSliderTopic); // horizontalSliderTopicWindow.ScrollIndex;
+            var horizontalScrollIndex = GetSafeScrollIndex(horizontalSliderTopic); // horizontalSliderTopicWindow.ScrollIndex;
 
             listboxTopic.HorizontalScrollIndex = horizontalScrollIndex;
             listboxTopic.Update();
@@ -834,7 +841,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
         {
             // Update scroller
             verticalScrollBarConversation.TotalUnits = listboxConversation.HeightContent();
-            int scrollIndex = GetSafeScrollIndex(verticalScrollBarConversation);
+            var scrollIndex = GetSafeScrollIndex(verticalScrollBarConversation);
 
             listboxConversation.ScrollIndex = scrollIndex;
             listboxConversation.Update();
@@ -842,7 +849,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
         protected override void ListBoxTopic_OnScroll()
         {
-            int scrollIndex = listboxTopic.ScrollIndex;
+            var scrollIndex = listboxTopic.ScrollIndex;
 
             // Update scroller
             verticalScrollBarTopic.SetScrollIndexWithoutRaisingScrollEvent(scrollIndex); // important to use this function here to prevent creating infinite callback loop
@@ -851,7 +858,7 @@ namespace DaggerfallWorkshop.Game.UserInterface
 
         protected override void ListBoxConversation_OnScroll()
         {
-            int scrollIndex = listboxConversation.ScrollIndex;
+            var scrollIndex = listboxConversation.ScrollIndex;
 
             // Update scroller
             verticalScrollBarConversation.SetScrollIndexWithoutRaisingScrollEvent(scrollIndex); // important to use this function here to prevent creating infinite callback loop

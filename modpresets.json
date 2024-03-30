@@ -1,0 +1,28 @@
+[
+    {
+        "Title": "Default",
+        "Author": "Jagget",
+        "Description": "Default Settings.",
+        "SettingsVersion": "1.7",
+        "Values": {
+            "Rest": {
+                "Enabled": "True",
+                "LoiterMode": "0"
+            },
+            "Inventory": {
+                "Enabled": "True",
+                "OnlyRemoveFromRemote": "True",
+                "HideTheWagon": "True"
+            },
+            "Dialogue": {
+                "PortraitPosition": "1",
+                "PortraitSize": "32"
+            },
+            "Common": {
+                "DefaultColor": "F3EF2CFF",
+                "HideWorld": "True"
+            }
+        },
+        "$version": "v1"
+    }
+]

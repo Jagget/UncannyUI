@@ -1,6 +1,6 @@
 {
     "ModTitle": "UncannyUI",
-    "ModVersion": "1.6",
+    "ModVersion": "1.7.0",
     "ModAuthor": "Uncanny (updated by Jagget)",
     "ContactInfo": "https://forums.dfworkshop.net",
     "DFUnity_Version": "1.0.0",
@@ -13,6 +13,7 @@
         "Assets/Game/Mods/UncannyUI/Scripts/UncannyTalkWindow.cs",
         "Assets/Game/Mods/UncannyUI/UncannyUI.dfmod.json",
         "Assets/Game/Mods/UncannyUI/textdatabase.txt",
-        "Assets/Game/Mods/UncannyUI/modsettings.json"
+        "Assets/Game/Mods/UncannyUI/modsettings.json",
+        "Assets/Game/Mods/UncannyUI/modpresets.json"
     ]
 }

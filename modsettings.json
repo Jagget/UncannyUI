@@ -1,5 +1,5 @@
 {
-    "Version": "1.5",
+    "Version": "1.7",
     "Sections": [
         {
             "Name": "Common",
@@ -81,6 +81,13 @@
                     "Value": true,
                     "Name": "OnlyRemoveFromRemote",
                     "Description": "Clicking on items from the ground or wagon will always transfer them to your inventory, never equipt or use them",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
+                },
+                {
+                    "Value": true,
+                    "Name": "HideTheWagon",
+                    "Description": "Hide the wagon from the inventory (previous behavior)",
                     "$version": "v1",
                     "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
                 }

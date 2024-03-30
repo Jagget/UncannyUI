@@ -12,9 +12,12 @@ using DaggerfallWorkshop.Game.Questing;
 using DaggerfallWorkshop.Game.Banking;
 using System.Linq;
 using DaggerfallConnect;
+using DaggerfallWorkshop;
+using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.Formulas;
+using DaggerfallWorkshop.Game.UserInterfaceWindows;
 
-namespace DaggerfallWorkshop.Game.UserInterfaceWindows
+namespace Game.Mods.UncannyUI.Scripts
 {
     /// <summary>
     /// Implements inventory window.
@@ -78,8 +81,9 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             new Rect(46, 110, 23, 22),
             new Rect(69, 110, 23, 22),
         };
+
         readonly Rect[] _itemRemoteButtonRects = new[]
-       {
+        {
             new Rect(0, 0, 23, 22),
             new Rect(23, 0, 23, 22),
             new Rect(0, 22, 23, 22),
@@ -92,7 +96,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             new Rect(23, 88, 23, 22),
             new Rect(0, 110, 23, 22),
             new Rect(23, 110, 23, 22),
-       };
+        };
 
         TextLabel equipButtonLabel, useButtonLabel, infoButtonLabel, exitButtonLabel;
 
@@ -120,6 +124,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         string suppressInventoryMessage = string.Empty;
 
         protected Panel wagonIconPanel;
+        private bool _hideTheWagon;
 
         public UncannyInventoryWindow(IUserInterfaceManager uiManager, DaggerfallBaseWindow previous = null)
             : base(uiManager, previous)
@@ -164,6 +169,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             wagonCarryWeightLabel = DaggerfallUI.AddDefaultShadowedTextLabel(wagonCarryWeightPos, NativePanel);
             wagonCarryWeightLabel.TextColor = DaggerfallUI.DaggerfallUnityDefaultToolTipTextColor;
+
+            _hideTheWagon = UncannyUILoader.Instance.GetModSettings().GetBool("Inventory", "HideTheWagon");
 
             goldButtonRect = new Rect(163, 0, 55, 10);
 
@@ -255,7 +262,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         void SetupAccessoryLabels()
         {
-            for (int i = 0; i < accessoryLabels.Length; i++)
+            for (var i = 0; i < accessoryLabels.Length; i++)
             {
                 Panel newPanel = DaggerfallUI.AddPanel(
                     new Rect(firstAccessoryRect.x, firstAccessoryRect.y + (accessoryYAdd * i), firstAccessoryRect.width, firstAccessoryRect.height),
@@ -304,7 +311,6 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             if (itemInfoPanel != null)
                 goldButton.OnMouseEnter += GoldButton_OnMouseEnter;
         }
-
 
 
         protected void OverideSetupItemInfoPanel()
@@ -376,7 +382,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             // Racial override can suppress inventory
             // We still setup and push window normally, actual suppression is done in Update()
-            MagicAndEffects.MagicEffects.RacialOverrideEffect racialOverride = GameManager.Instance.PlayerEffectManager.GetRacialOverrideEffect();
+            var racialOverride = GameManager.Instance.PlayerEffectManager.GetRacialOverrideEffect();
             if (racialOverride != null)
                 suppressInventory = racialOverride.GetSuppressInventory(out suppressInventoryMessage);
 
@@ -392,12 +398,14 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 _dropIconTexture = 11;
             }
             else
-            {   // Set dropped items as default target
+            {
+                // Set dropped items as default target
                 remoteItems = droppedItems;
                 remoteTargetType = RemoteTargetTypes.Dropped;
                 _dropIconArchive = DaggerfallLootDataTables.randomTreasureArchive;
                 _dropIconTexture = -1;
             }
+
             // Use custom loot target if specified
             if (lootTarget != null)
             {
@@ -414,7 +422,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     DaggerfallLootDataTables.dropIconIdxs.TryGetValue(_dropIconArchive, out iconIdxs);
                     if (iconIdxs != null)
                     {
-                        for (int i = 0; i < iconIdxs.Length; i++)
+                        for (var i = 0; i < iconIdxs.Length; i++)
                         {
                             if (iconIdxs[i] == lootTarget.TextureRecord)
                             {
@@ -424,6 +432,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                         }
                     }
                 }
+
                 OnClose += OnCloseWindow;
             }
 
@@ -440,6 +449,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 // When managing inventory only, make "equip" default action so player can manage gear
                 SelectActionMode(ActionModes.Equip);
             }
+
             if (IsSetup)
             {
                 OverrideCheckWagonAccess();
@@ -448,6 +458,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 remoteItemListScroller.ResetScroll();
                 SetRemoteItemsAnimation();
             }
+
             // Clear info panel
             if (itemInfoPanelLabel != null)
                 itemInfoPanelLabel.SetText(new TextFile.Token[0]);
@@ -457,7 +468,6 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
             // Refresh window
             Refresh();
-
         }
 
         protected void OverrideCheckWagonAccess()
@@ -487,14 +497,14 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 Vector3 playerPos = GameManager.Instance.PlayerObject.transform.position;
                 // Find closest door to player
-                float closestDoorDistance = float.MaxValue;
+                var closestDoorDistance = float.MaxValue;
                 foreach (DaggerfallStaticDoors doors in allDoors)
                 {
                     int doorIndex;
                     Vector3 doorPos;
                     if (doors.FindClosestDoorToPlayer(playerPos, -1, out doorPos, out doorIndex, DoorTypes.DungeonExit))
                     {
-                        float distance = Vector3.Distance(playerPos, doorPos);
+                        var distance = Vector3.Distance(playerPos, doorPos);
                         if (distance < closestDoorDistance)
                             closestDoorDistance = distance;
                     }
@@ -504,6 +514,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 if (closestDoorDistance < proximityWagonAccessDistance)
                     return true;
             }
+
             return false;
         }
 
@@ -521,6 +532,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 playerEntity.TallyCrimeGuildRequirements(true, 1);
                 Debug.Log("Player crime detected: stealing from a shop!!");
             }
+
             shopShelfStealing = false;
 
             // If icon has changed move items to dropped list so this loot is removed and a new one created
@@ -545,7 +557,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
                 droppedLootContainer.Items.TransferAll(droppedItems);
                 if (lootTarget != null)
-                {   // Move newly created loot container to original position in x & z coords.
+                {
+                    // Move newly created loot container to original position in x & z coords.
                     Vector3 pos = new Vector3(lootTarget.transform.position.x, droppedLootContainer.transform.position.y, lootTarget.transform.position.z);
                     droppedLootContainer.transform.position = pos;
                 }
@@ -572,8 +585,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 DaggerfallUnityItem currentRightHandWeapon = player.ItemEquipTable.GetItem(EquipSlots.RightHand);
                 if (currentRightHandWeapon != null)
                 {
-                    string message = TextManager.Instance.GetLocalizedText("equippingWeapon");
-                    string templateName = TextManager.Instance.GetLocalizedItemName(currentRightHandWeapon.ItemTemplate.index, currentRightHandWeapon.ItemTemplate.name);
+                    var message = TextManager.Instance.GetLocalizedText("equippingWeapon");
+                    var templateName = TextManager.Instance.GetLocalizedItemName(currentRightHandWeapon.ItemTemplate.index, currentRightHandWeapon.ItemTemplate.name);
                     message = message.Replace("%s", templateName);
                     DaggerfallUI.Instance.PopupMessage(message);
                 }
@@ -584,8 +597,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 DaggerfallUnityItem currentLeftHandWeapon = player.ItemEquipTable.GetItem(EquipSlots.LeftHand);
                 if (currentLeftHandWeapon != null)
                 {
-                    string message = TextManager.Instance.GetLocalizedText("equippingWeapon");
-                    string templateName = TextManager.Instance.GetLocalizedItemName(currentLeftHandWeapon.ItemTemplate.index, currentLeftHandWeapon.ItemTemplate.name);
+                    var message = TextManager.Instance.GetLocalizedText("equippingWeapon");
+                    var templateName = TextManager.Instance.GetLocalizedItemName(currentLeftHandWeapon.ItemTemplate.index, currentLeftHandWeapon.ItemTemplate.name);
                     message = message.Replace("%s", templateName);
                     DaggerfallUI.Instance.PopupMessage(message);
                 }
@@ -702,19 +715,20 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             ImageData containerImage;
             if (_dropIconTexture > -1)
             {
-                string filename = TextureFile.IndexToFileName(_dropIconArchive);
+                var filename = TextureFile.IndexToFileName(_dropIconArchive);
                 containerImage = ImageReader.GetImageData(filename, DaggerfallLootDataTables.dropIconIdxs[_dropIconArchive][_dropIconTexture], 0, true);
             }
             else if (lootTarget != null && lootTarget.TextureArchive > 0)
             {
-                string filename = TextureFile.IndexToFileName(lootTarget.TextureArchive);
+                var filename = TextureFile.IndexToFileName(lootTarget.TextureArchive);
                 containerImage = ImageReader.GetImageData(filename, lootTarget.TextureRecord, 0, true);
             }
             else
             {
                 containerImage = DaggerfallUnity.ItemHelper.GetContainerImage(
-                        (remoteTargetType == RemoteTargetTypes.Loot) ? lootTarget.ContainerImage : InventoryContainerImages.Ground);
+                    (remoteTargetType == RemoteTargetTypes.Loot) ? lootTarget.ContainerImage : InventoryContainerImages.Ground);
             }
+
             remoteTargetIconPanel.BackgroundTexture = containerImage.texture;
         }
 
@@ -726,7 +740,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             if (localItems != null)
             {
                 // Add items to list
-                for (int i = 0; i < localItems.Count; i++)
+                for (var i = 0; i < localItems.Count; i++)
                 {
                     DaggerfallUnityItem item = localItems.GetItem(i);
                     // Add if not equipped
@@ -738,10 +752,10 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         protected void OverrideAddLocalItem(DaggerfallUnityItem item)
         {
-            bool isWeaponOrArmor = (item.ItemGroup == ItemGroups.Weapons || item.ItemGroup == ItemGroups.Armor);
+            var isWeaponOrArmor = (item.ItemGroup == ItemGroups.Weapons || item.ItemGroup == ItemGroups.Armor);
 
             //Do not show cart in inventory
-            if (item == localItems.GetItem(ItemGroups.Transportation, (int)Transportation.Small_cart))
+            if (_hideTheWagon && item == localItems.GetItem(ItemGroups.Transportation, (int)Transportation.Small_cart))
                 return;
 
             // Add based on view
@@ -858,8 +872,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         void SetEquipDelayTime(bool setTime)
         {
-            int delayTimeRight = 0;
-            int delayTimeLeft = 0;
+            var delayTimeRight = 0;
+            var delayTimeLeft = 0;
             PlayerEntity player = GameManager.Instance.PlayerEntity;
             DaggerfallUnityItem currentRightHandItem = player.ItemEquipTable.GetItem(EquipSlots.RightHand);
             DaggerfallUnityItem currentLeftHandItem = player.ItemEquipTable.GetItem(EquipSlots.LeftHand);
@@ -876,6 +890,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     if (currentRightHandItem != null)
                         delayTimeRight += WeaponManager.EquipDelayTimes[currentRightHandItem.GroupIndex];
                 }
+
                 if (lastLeftHandItem != currentLeftHandItem)
                 {
                     // Add delay for unequipping old item
@@ -895,11 +910,13 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 {
                     lastRightHandItem = currentRightHandItem;
                 }
+
                 if (currentLeftHandItem != null)
                 {
                     lastLeftHandItem = currentLeftHandItem;
                 }
             }
+
             GameManager.Instance.WeaponManager.EquipCountdownRightHand += delayTimeRight;
             GameManager.Instance.WeaponManager.EquipCountdownLeftHand += delayTimeLeft;
         }
@@ -982,6 +999,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             SelectActionMode(ActionModes.Info);
             DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
         }
+
         private void GoldButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
         {
             // Show message box
@@ -1002,17 +1020,17 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         private void DropGoldPopup_OnGotUserInput(DaggerfallInputMessageBox sender, string input)
         {
             // Get player gold count
-            int playerGold = GameManager.Instance.PlayerEntity.GoldPieces;
+            var playerGold = GameManager.Instance.PlayerEntity.GoldPieces;
 
             // Determine how many gold pieces to drop
-            int goldToDrop = 0;
-            bool result = int.TryParse(input, out goldToDrop);
+            var goldToDrop = 0;
+            var result = int.TryParse(input, out goldToDrop);
             if (!result || goldToDrop < 1 || goldToDrop > playerGold)
                 return;
             if (usingWagon)
             {
                 // Check wagon weight limit
-                int wagonCanHold = ComputeCanHoldAmount(playerGold, DaggerfallBankManager.goldUnitWeightInKg, ItemHelper.WagonKgLimit, remoteItems.GetWeight());
+                var wagonCanHold = ComputeCanHoldAmount(playerGold, DaggerfallBankManager.goldUnitWeightInKg, ItemHelper.WagonKgLimit, remoteItems.GetWeight());
                 if (goldToDrop > wagonCanHold)
                 {
                     goldToDrop = wagonCanHold;
@@ -1075,6 +1093,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 else if (from == remoteItems)
                     questItem.PlayerDropped = false;
             }
+
             // Extinguish light sources when transferring out of player inventory
             if (item.IsLightSource && playerEntity.LightSource == item && from == localItems)
                 playerEntity.LightSource = null;
@@ -1088,8 +1107,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             if (this._maxAmount <= 0)
                 return;
 
-            bool splitRequired = maxAmount < item.stackCount && item.stackCount > 1;
-            bool controlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            var splitRequired = maxAmount < item.stackCount && item.stackCount > 1;
+            var controlPressed = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
             if (splitRequired || controlPressed)
             {
@@ -1099,7 +1118,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     _stackFrom = from;
                     _stackTo = to;
                     _stackEquip = equip;
-                    string defaultValue = controlPressed ? "0" : this._maxAmount.ToString();
+                    var defaultValue = controlPressed ? "0" : this._maxAmount.ToString();
 
                     // Show message box
                     DaggerfallInputMessageBox mb = new DaggerfallInputMessageBox(uiManager, this);
@@ -1113,12 +1132,12 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                     mb.Show();
                     return;
                 }
+
                 if (splitRequired)
                     return;
             }
 
             DoTransferItem(item, from, to, equip);
-
         }
 
 
@@ -1157,22 +1176,23 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         private int ComputeCanHoldAmount(int unitsAvailable, float unitWeightInKg, float capacityInKg, float loadInKg)
         {
-            int canHold = unitsAvailable;
-            int roundUnitWeight = WeightInGPUnits(unitWeightInKg);
+            var canHold = unitsAvailable;
+            var roundUnitWeight = WeightInGPUnits(unitWeightInKg);
             if (roundUnitWeight > 0)
             {
-                int roundCapacity = WeightInGPUnits(capacityInKg);
-                int roundLoad = WeightInGPUnits(loadInKg);
+                var roundCapacity = WeightInGPUnits(capacityInKg);
+                var roundLoad = WeightInGPUnits(loadInKg);
                 canHold = Math.Min(canHold, (roundCapacity - roundLoad) / roundUnitWeight);
             }
+
             return canHold;
         }
 
         private void SplitStackPopup_OnGotUserInput(DaggerfallInputMessageBox sender, string input)
         {
             // Determine how many items to split
-            int count = 0;
-            bool result = int.TryParse(input, out count);
+            var count = 0;
+            var result = int.TryParse(input, out count);
             if (!result || count > _maxAmount)
                 return;
 
@@ -1208,8 +1228,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         {
             GameManager.Instance.PlayerEntity.TallyCrimeGuildRequirements(true, 1);
             PlayerGPS.DiscoveredBuilding buildingDiscoveryData = GameManager.Instance.PlayerEnterExit.BuildingDiscoveryData;
-            int weightAndNumItems = (int)theftBasket.GetWeight() + theftBasket.Count;
-            int chanceBeingDetected = FormulaHelper.CalculateShopliftingChance(playerEntity, buildingDiscoveryData.quality, weightAndNumItems);
+            var weightAndNumItems = (int)theftBasket.GetWeight() + theftBasket.Count;
+            var chanceBeingDetected = FormulaHelper.CalculateShopliftingChance(playerEntity, buildingDiscoveryData.quality, weightAndNumItems);
             // Send the guards if detected
             if (!Dice100.FailedRoll(chanceBeingDetected))
             {
@@ -1284,7 +1304,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
         {
             DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
             // Get equip value
-            byte value = paperDoll.GetEquipIndex((int)position.x, (int)position.y);
+            var value = paperDoll.GetEquipIndex((int)position.x, (int)position.y);
             if (value == 0xff)
                 return null;
 
@@ -1329,7 +1349,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 else
                 {
                     if (!item.UseItem(localItems))
-                        UseItemOverride(item, localItems); ;
+                        UseItemOverride(item, localItems);
+                    ;
                 }
             }
             else if (actionMode == ActionModes.Use)
@@ -1347,7 +1368,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 // Transfer to remote items
                 if (remoteItems != null && !chooseOne)
                 {
-                    int canHold = -1;
+                    var canHold = -1;
                     if (usingWagon)
                         canHold = WagonCanHoldAmount(item);
                     OverrideTransferItem(item, localItems, remoteItems, canHold, true);
@@ -1377,7 +1398,7 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
                 }
             }
 
-            bool onlyRemove = UncannyUILoader.Instance.GetModSettings().GetBool("Inventory", "OnlyRemoveFromRemote");
+            var onlyRemove = UncannyUILoader.Instance.GetModSettings().GetBool("Inventory", "OnlyRemoveFromRemote");
 
             actionMode = onlyRemove ? ActionModes.Remove : actionMode;
 
@@ -1417,21 +1438,23 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
 
         private int GetNextArchive()
         {
-            bool next = false;
-            foreach (int ai in DaggerfallLootDataTables.dropIconIdxs.Keys)
+            var next = false;
+            foreach (var ai in DaggerfallLootDataTables.dropIconIdxs.Keys)
             {
                 if (next)
                     return ai;
                 next = (ai == _dropIconArchive);
             }
+
             return DaggerfallLootDataTables.dropIconIdxs.Keys.First();
         }
 
         private void UpdateItemInfoPanelGold()
         {
-            int gold = GameManager.Instance.PlayerEntity.GoldPieces;
-            float weight = gold * DaggerfallBankManager.goldUnitWeightInKg;
-            TextFile.Token[] tokens = {
+            var gold = GameManager.Instance.PlayerEntity.GoldPieces;
+            var weight = gold * DaggerfallBankManager.goldUnitWeightInKg;
+            TextFile.Token[] tokens =
+            {
                 TextFile.CreateTextToken(string.Format(goldAmount, gold)),
                 TextFile.NewLineToken,
                 TextFile.CreateTextToken(string.Format(goldWeight, weight.ToString(weight % 1 == 0 ? "F0" : "F2")))
@@ -1445,8 +1468,8 @@ namespace DaggerfallWorkshop.Game.UserInterfaceWindows
             {
                 AttemptPrivatePropertyTheft();
             }
+
             OnClose -= OnCloseWindow;
         }
-
     }
 }
