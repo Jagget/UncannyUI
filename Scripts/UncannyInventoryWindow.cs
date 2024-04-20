@@ -16,6 +16,7 @@ using DaggerfallWorkshop;
 using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.Formulas;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
+using DaggerfallWorkshop.Game.Utility.ModSupport;
 
 namespace Game.Mods.UncannyUI.Scripts
 {
@@ -119,12 +120,13 @@ namespace Game.Mods.UncannyUI.Scripts
 
         protected Texture2D remoteSelected, remoteNotSelected;
 
-        KeyCode toggleClosedBinding;
-        bool suppressInventory = false;
-        string suppressInventoryMessage = string.Empty;
+        private KeyCode _toggleClosedBinding;
+        private bool _suppressInventory;
+        private string _suppressInventoryMessage = string.Empty;
 
-        protected Panel wagonIconPanel;
+        private Panel _wagonIconPanel;
         private bool _hideTheWagon;
+        private bool _isHmlModAdded;
 
         public UncannyInventoryWindow(IUserInterfaceManager uiManager, DaggerfallBaseWindow previous = null)
             : base(uiManager, previous)
@@ -134,6 +136,9 @@ namespace Game.Mods.UncannyUI.Scripts
 
         protected override void Setup()
         {
+            var hiddenMapLocationsMod = ModManager.Instance.GetModFromGUID("7e487a8a-71e9-4187-990f-22012c11a04e");
+            _isHmlModAdded = hiddenMapLocationsMod != null && hiddenMapLocationsMod.Enabled;
+
             localItemListScrollerRect = new Rect(163, 29, 101, 132);
             localItemListRect = new Rect(9, 0, 92, 132);
 
@@ -230,9 +235,9 @@ namespace Game.Mods.UncannyUI.Scripts
             SetupAccessoryLabels();
 
             //Wagon icon & Text
-            wagonIconPanel = DaggerfallUI.AddPanel(new Rect(2, 2, wagonButton.InteriorWidth - 4, wagonButton.InteriorHeight - 4), wagonButton);
-            wagonIconPanel.BackgroundTexture = DaggerfallUnity.ItemHelper.GetContainerImage(InventoryContainerImages.Wagon).texture;
-            wagonIconPanel.BackgroundTextureLayout = BackgroundLayout.ScaleToFit;
+            _wagonIconPanel = DaggerfallUI.AddPanel(new Rect(2, 2, wagonButton.InteriorWidth - 4, wagonButton.InteriorHeight - 4), wagonButton);
+            _wagonIconPanel.BackgroundTexture = DaggerfallUnity.ItemHelper.GetContainerImage(InventoryContainerImages.Wagon).texture;
+            _wagonIconPanel.BackgroundTextureLayout = BackgroundLayout.ScaleToFit;
 
             wagonButton.BackgroundTexture = wagonNotSelected;
             _remoteButton.BackgroundTexture = remoteSelected;
@@ -378,13 +383,13 @@ namespace Game.Mods.UncannyUI.Scripts
 
         public override void OnPush()
         {
-            toggleClosedBinding = InputManager.Instance.GetBinding(InputManager.Actions.Inventory);
+            _toggleClosedBinding = InputManager.Instance.GetBinding(InputManager.Actions.Inventory);
 
             // Racial override can suppress inventory
-            // We still setup and push window normally, actual suppression is done in Update()
+            // We still set up and push window normally, actual suppression is done in Update()
             var racialOverride = GameManager.Instance.PlayerEffectManager.GetRacialOverrideEffect();
             if (racialOverride != null)
-                suppressInventory = racialOverride.GetSuppressInventory(out suppressInventoryMessage);
+                _suppressInventory = racialOverride.GetSuppressInventory(out _suppressInventoryMessage);
 
             // Local items always points to player inventory
             localItems = PlayerEntity.Items;
@@ -607,7 +612,7 @@ namespace Game.Mods.UncannyUI.Scripts
 
         void OverrideSetupClosedBinding()
         {
-            toggleClosedBinding = InputManager.Instance.GetBinding(InputManager.Actions.Inventory);
+            _toggleClosedBinding = InputManager.Instance.GetBinding(InputManager.Actions.Inventory);
         }
 
         public override void Update()
@@ -617,16 +622,16 @@ namespace Game.Mods.UncannyUI.Scripts
             if (DaggerfallUI.Instance.HotkeySequenceProcessed == HotkeySequence.HotkeySequenceProcessStatus.NotFound)
             {
                 // Toggle window closed with same hotkey used to open it
-                if (InputManager.Instance.GetKeyUp(toggleClosedBinding))
+                if (InputManager.Instance.GetKeyUp(_toggleClosedBinding))
                     CloseWindow();
             }
 
             // Close window immediately if inventory suppressed
-            if (suppressInventory)
+            if (_suppressInventory)
             {
                 CloseWindow();
-                if (!string.IsNullOrEmpty(suppressInventoryMessage))
-                    DaggerfallUI.MessageBox(suppressInventoryMessage);
+                if (!string.IsNullOrEmpty(_suppressInventoryMessage))
+                    DaggerfallUI.MessageBox(_suppressInventoryMessage);
                 return;
             }
         }
@@ -1065,6 +1070,14 @@ namespace Game.Mods.UncannyUI.Scripts
             // Handle map items
             if (item.IsOfTemplate(ItemGroups.MiscItems, (int)MiscItems.Map))
             {
+                if (_isHmlModAdded)
+                {
+                    remoteItems.RemoveItem(item);
+                    localItems.AddItem(item);
+                    Refresh(false);
+                    return;
+                }
+
                 RecordLocationFromMap(item);
                 from.RemoveItem(item);
                 Refresh(false);
@@ -1393,8 +1406,10 @@ namespace Game.Mods.UncannyUI.Scripts
                 if (quest != null)
                 {
                     Item questItem = quest.GetItem(item.QuestItemSymbol);
-                    if (quest != null)
+                    if (questItem != null)
+                    {
                         questItem.SetPlayerClicked();
+                    }
                 }
             }
 
