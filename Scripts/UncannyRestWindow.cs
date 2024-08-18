@@ -8,6 +8,8 @@ using DaggerfallWorkshop;
 using DaggerfallWorkshop.Game;
 using DaggerfallWorkshop.Game.Banking;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
+using DaggerfallConnect.Utility;
+using DaggerfallWorkshop.Utility;
 
 namespace Game.Mods.UncannyUI.Scripts
 {
@@ -32,30 +34,30 @@ namespace Game.Mods.UncannyUI.Scripts
         protected readonly string HoursString = UncannyUILoader.Instance.GetMod().Localize("Hours");
 
         //ModeButtons
-        Texture2D[] modeButtonsImage;
-        Rect[] modeImageRect = { new Rect(5, 0, 48, 11), new Rect(54, 0, 48, 11), new Rect(103, 0, 48, 11) };
-        Button[] modeButton = new Button[3];
-        Rect[] modeButtonRect = { new Rect(6, 44, 48, 11), new Rect(54, 44, 48, 11), new Rect(102, 44, 48, 11) };
-        TextLabel[] modeLabel = new TextLabel[4];
-        Panel counterTextPanel;
-        Rect counterTextPanelRect = new Rect(4, 10, 16, 8);
+        private Texture2D[] _modeButtonsImage;
+        private readonly Rect[] _modeImageRect = { new Rect(5, 58, 48, 11), new Rect(54, 58, 48, 11), new Rect(103, 58, 48, 11) };
+        private readonly Rect[] _modeButtonRect = { new Rect(4, 43, 48, 11), new Rect(53, 43, 48, 11), new Rect(102, 43, 48, 11) };
+        private readonly Button[] _modeButton = new Button[3];
+        private readonly TextLabel[] _modeLabel = new TextLabel[4];
 
-        Panel currentTimePanel;
-        TextLabel currentTimeLabel;
+        private Panel _counterTextPanel;
+        private Rect _counterTextPanelRect = new Rect(4, 10, 16, 8);
+        private Panel _currentTimePanel;
+        private TextLabel _currentTimeLabel;
 
-        Panel allowRestPanel;
-        TextLabel allowRestLabel;
+        private Panel _allowRestPanel;
+        private TextLabel _allowRestLabel;
 
-        Texture2D mainPanelTexture;
-        Vector2Int mainPanelSize = new Vector2Int(154, 58);
+        private Texture2D _mainPanelTexture;
+        private Vector2Int _mainPanelSize = new Vector2Int(154, 58);
 
-        HorizontalSlider restSlider;
+        private HorizontalSlider _restSlider;
 
-        int selectedTime;
+        private int _selectedTime;
 
-        Rect currentTimeRect = new Rect(17, 32, 124, 10);
-        Vector2 sliderPos = new Vector2(17, 23);
-        Rect allowRestRect = new Rect(17, 4, 124, 16);
+        private Rect _currentTimeRect = new Rect(17, 32, 124, 10);
+        private Vector2 _sliderPos = new Vector2(17, 23);
+        private Rect _allowRestRect = new Rect(17, 4, 124, 16);
 
         public UncannyRestWindow(IUserInterfaceManager uiManager, bool ignoreAllocatedBed = false)
             : base(uiManager)
@@ -87,154 +89,153 @@ namespace Game.Mods.UncannyUI.Scripts
 
             // Create interface panel
             mainPanel.HorizontalAlignment = HorizontalAlignment.Center;
-            mainPanel.BackgroundTexture = mainPanelTexture;
+            mainPanel.BackgroundTexture = _mainPanelTexture;
             mainPanel.Position = new Vector2(0, 70);
-            mainPanel.Size = new Vector2(mainPanelSize.x, mainPanelSize.y);
+            mainPanel.Size = new Vector2(_mainPanelSize.x, _mainPanelSize.y);
 
             NativePanel.Components.Add(mainPanel);
 
-            string allowRestMsg;
-            var canRest = CheckRestStatus(out allowRestMsg);
+            var canRest = CheckRestStatus(out string allowRestMsg);
 
-            currentTimePanel = DaggerfallUI.AddPanel(currentTimeRect, mainPanel);
-            currentTimeLabel = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, currentTimePanel);
-            currentTimeLabel.TextColor = UncannyUILoader.Instance.DefaultColor();
-            currentTimeLabel.Text = DaggerfallUnity.Instance.WorldTime.Now.DateString() + " " + DaggerfallUnity.Instance.WorldTime.Now.MinTimeString();
-            currentTimeLabel.HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-            currentTimeLabel.HorizontalAlignment = HorizontalAlignment.Center;
-            currentTimeLabel.VerticalAlignment = VerticalAlignment.Middle;
+            _currentTimePanel = DaggerfallUI.AddPanel(_currentTimeRect, mainPanel);
+            _currentTimeLabel = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _currentTimePanel);
+            _currentTimeLabel.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _currentTimeLabel.Text = DaggerfallUnity.Instance.WorldTime.Now.DateString() + " " + DaggerfallUnity.Instance.WorldTime.Now.MinTimeString();
+            _currentTimeLabel.HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+            _currentTimeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            _currentTimeLabel.VerticalAlignment = VerticalAlignment.Middle;
 
             if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") < 2)
             {
                 if (canRest)
                 {
-                    modeButton[0] = DaggerfallUI.AddButton(modeButtonRect[1], mainPanel);
-                    modeButton[0].OnMouseClick += HealedButton_OnMouseClick;
-                    modeButton[0].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestUntilHealed);
-                    modeButton[0].BackgroundTexture = modeButtonsImage[0];
+                    _modeButton[0] = DaggerfallUI.AddButton(_modeButtonRect[1], mainPanel);
+                    _modeButton[0].OnMouseClick += HealedButton_OnMouseClick;
+                    _modeButton[0].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestUntilHealed);
+                    _modeButton[0].BackgroundTexture = _modeButtonsImage[0];
 
-                    modeLabel[0] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, modeButton[0]);
-                    modeLabel[0].TextColor = UncannyUILoader.Instance.DefaultColor();
-                    modeLabel[0].Text = UntilHealedString;
-                    modeLabel[0].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-                    modeLabel[0].HorizontalAlignment = HorizontalAlignment.Center;
-                    modeLabel[0].VerticalAlignment = VerticalAlignment.Middle;
+                    _modeLabel[0] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _modeButton[0]);
+                    _modeLabel[0].TextColor = UncannyUILoader.Instance.DefaultColor();
+                    _modeLabel[0].Text = UntilHealedString;
+                    _modeLabel[0].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+                    _modeLabel[0].HorizontalAlignment = HorizontalAlignment.Center;
+                    _modeLabel[0].VerticalAlignment = VerticalAlignment.Middle;
                 }
 
-                modeButton[1] = DaggerfallUI.AddButton(modeButtonRect[2], mainPanel);
-                modeButton[1].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestForAWhile);
-                modeButton[1].BackgroundTexture = modeButtonsImage[1];
+                _modeButton[1] = DaggerfallUI.AddButton(_modeButtonRect[2], mainPanel);
+                _modeButton[1].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestForAWhile);
+                _modeButton[1].BackgroundTexture = _modeButtonsImage[1];
 
-                modeLabel[1] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, modeButton[1]);
-                modeLabel[1].TextColor = UncannyUILoader.Instance.DefaultColor();
-                modeLabel[1].Text = RestString;
-                modeLabel[1].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-                modeLabel[1].HorizontalAlignment = HorizontalAlignment.Center;
-                modeLabel[1].VerticalAlignment = VerticalAlignment.Middle;
+                _modeLabel[1] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _modeButton[1]);
+                _modeLabel[1].TextColor = UncannyUILoader.Instance.DefaultColor();
+                _modeLabel[1].Text = RestString;
+                _modeLabel[1].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+                _modeLabel[1].HorizontalAlignment = HorizontalAlignment.Center;
+                _modeLabel[1].VerticalAlignment = VerticalAlignment.Middle;
 
                 if (canRest)
                 {
-                    modeButton[1].OnMouseClick += WhileButton_OnMouseClick;
-                    modeLabel[1].Text = RestString;
+                    _modeButton[1].OnMouseClick += WhileButton_OnMouseClick;
+                    _modeLabel[1].Text = RestString;
                 }
                 else
                 {
-                    modeButton[1].OnMouseClick += LoiterButton_OnMouseClick;
+                    _modeButton[1].OnMouseClick += LoiterButton_OnMouseClick;
 
                     if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") == 0)
-                        modeLabel[1].Text = WaitString;
+                        _modeLabel[1].Text = WaitString;
 
                     else if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") == 1)
-                        modeLabel[1].Text = LoiterString;
+                        _modeLabel[1].Text = LoiterString;
                 }
             }
             else if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") == 2)
             {
-                modeButton[0] = DaggerfallUI.AddButton(modeButtonRect[0], mainPanel);
-                modeButton[0].OnMouseClick += WhileButton_OnMouseClick;
-                modeButton[0].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestForAWhile);
-                modeButton[0].BackgroundTexture = modeButtonsImage[0];
+                _modeButton[0] = DaggerfallUI.AddButton(_modeButtonRect[0], mainPanel);
+                _modeButton[0].OnMouseClick += WhileButton_OnMouseClick;
+                _modeButton[0].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestForAWhile);
+                _modeButton[0].BackgroundTexture = _modeButtonsImage[0];
 
-                modeLabel[0] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, modeButton[0]);
-                modeLabel[0].TextColor = UncannyUILoader.Instance.DefaultColor();
-                modeLabel[0].Text = RestString;
-                modeLabel[0].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-                modeLabel[0].HorizontalAlignment = HorizontalAlignment.Center;
-                modeLabel[0].VerticalAlignment = VerticalAlignment.Middle;
+                _modeLabel[0] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _modeButton[0]);
+                _modeLabel[0].TextColor = UncannyUILoader.Instance.DefaultColor();
+                _modeLabel[0].Text = RestString;
+                _modeLabel[0].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+                _modeLabel[0].HorizontalAlignment = HorizontalAlignment.Center;
+                _modeLabel[0].VerticalAlignment = VerticalAlignment.Middle;
 
-                modeButton[1] = DaggerfallUI.AddButton(modeButtonRect[1], mainPanel);
-                modeButton[1].OnMouseClick += HealedButton_OnMouseClick;
-                modeButton[1].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestUntilHealed);
-                modeButton[1].BackgroundTexture = modeButtonsImage[1];
+                _modeButton[1] = DaggerfallUI.AddButton(_modeButtonRect[1], mainPanel);
+                _modeButton[1].OnMouseClick += HealedButton_OnMouseClick;
+                _modeButton[1].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestUntilHealed);
+                _modeButton[1].BackgroundTexture = _modeButtonsImage[1];
 
-                modeLabel[1] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, modeButton[1]);
-                modeLabel[1].TextColor = UncannyUILoader.Instance.DefaultColor();
-                modeLabel[1].Text = UntilHealedString;
-                modeLabel[1].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-                modeLabel[1].HorizontalAlignment = HorizontalAlignment.Center;
-                modeLabel[1].VerticalAlignment = VerticalAlignment.Middle;
+                _modeLabel[1] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _modeButton[1]);
+                _modeLabel[1].TextColor = UncannyUILoader.Instance.DefaultColor();
+                _modeLabel[1].Text = UntilHealedString;
+                _modeLabel[1].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+                _modeLabel[1].HorizontalAlignment = HorizontalAlignment.Center;
+                _modeLabel[1].VerticalAlignment = VerticalAlignment.Middle;
 
-                modeButton[2] = DaggerfallUI.AddButton(modeButtonRect[2], mainPanel);
-                modeButton[2].OnMouseClick += LoiterButton_OnMouseClick;
-                modeButton[2].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestLoiter);
-                modeButton[2].BackgroundTexture = modeButtonsImage[2];
+                _modeButton[2] = DaggerfallUI.AddButton(_modeButtonRect[2], mainPanel);
+                _modeButton[2].OnMouseClick += LoiterButton_OnMouseClick;
+                _modeButton[2].Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestLoiter);
+                _modeButton[2].BackgroundTexture = _modeButtonsImage[2];
 
-                modeLabel[2] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, modeButton[2]);
-                modeLabel[2].TextColor = UncannyUILoader.Instance.DefaultColor();
-                modeLabel[2].Text = LoiterString;
-                modeLabel[2].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-                modeLabel[2].HorizontalAlignment = HorizontalAlignment.Center;
-                modeLabel[2].VerticalAlignment = VerticalAlignment.Middle;
+                _modeLabel[2] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _modeButton[2]);
+                _modeLabel[2].TextColor = UncannyUILoader.Instance.DefaultColor();
+                _modeLabel[2].Text = LoiterString;
+                _modeLabel[2].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+                _modeLabel[2].HorizontalAlignment = HorizontalAlignment.Center;
+                _modeLabel[2].VerticalAlignment = VerticalAlignment.Middle;
             }
 
             if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") == 1 && !canRest)
             {
-                restSlider = DaggerfallUI.AddSlider(sliderPos, 124, (x) => x.SetIndicator(1, DaggerfallUnity.Settings.LoiterLimitInHours, 1), 1, mainPanel);
+                _restSlider = DaggerfallUI.AddSlider(_sliderPos, 124, (x) => x.SetIndicator(1, DaggerfallUnity.Settings.LoiterLimitInHours, 1), 1, mainPanel);
             }
             else
             {
-                restSlider = DaggerfallUI.AddSlider(sliderPos, 124, (x) => x.SetIndicator(1, 24, 1), 1, mainPanel);
+                _restSlider = DaggerfallUI.AddSlider(_sliderPos, 124, (x) => x.SetIndicator(1, 24, 1), 1, mainPanel);
             }
 
-            restSlider.Indicator.Position += new Vector2(-13, -1);
-            restSlider.Value = Mathf.Min(8, restSlider.TotalUnits);
-            restSlider.Indicator.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _restSlider.Indicator.Position += new Vector2(-13, -1);
+            _restSlider.Value = Mathf.Min(8, _restSlider.TotalUnits);
+            _restSlider.Indicator.TextColor = UncannyUILoader.Instance.DefaultColor();
 
-            allowRestPanel = DaggerfallUI.AddPanel(allowRestRect, mainPanel);
-            allowRestLabel = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, allowRestPanel);
-            allowRestLabel.TextColor = UncannyUILoader.Instance.DefaultColor();
-            allowRestLabel.Text = allowRestMsg;
-            allowRestLabel.Text = allowRestMsg;
-            allowRestLabel.WrapText = true;
-            allowRestLabel.WrapWords = true;
-            allowRestLabel.MaxWidth = 124;
-            allowRestLabel.HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-            allowRestLabel.HorizontalAlignment = HorizontalAlignment.Center;
-            allowRestLabel.VerticalAlignment = VerticalAlignment.Middle;
+            _allowRestPanel = DaggerfallUI.AddPanel(_allowRestRect, mainPanel);
+            _allowRestLabel = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, _allowRestPanel);
+            _allowRestLabel.TextColor = UncannyUILoader.Instance.DefaultColor();
+            _allowRestLabel.Text = allowRestMsg;
+            _allowRestLabel.Text = allowRestMsg;
+            _allowRestLabel.WrapText = true;
+            _allowRestLabel.WrapWords = true;
+            _allowRestLabel.MaxWidth = 124;
+            _allowRestLabel.HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+            _allowRestLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            _allowRestLabel.VerticalAlignment = VerticalAlignment.Middle;
 
             //Counter
             // Setup counter text
-            counterTextPanel = DaggerfallUI.AddPanel(counterTextPanelRect, mainPanel);
+            _counterTextPanel = DaggerfallUI.AddPanel(_counterTextPanelRect, mainPanel);
             counterLabel.Position = new Vector2(0, 2);
             counterLabel.HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
             counterLabel.HorizontalAlignment = HorizontalAlignment.Center;
-            counterTextPanel.Components.Add(counterLabel);
-            counterTextPanel.Enabled = false;
+            _counterTextPanel.Components.Add(counterLabel);
+            _counterTextPanel.Enabled = false;
 
             // Stop button
-            stopButton = DaggerfallUI.AddButton(modeButtonRect[2], mainPanel);
+            stopButton = DaggerfallUI.AddButton(_modeButtonRect[2], mainPanel);
             stopButton.OnMouseClick += StopButton_OnMouseClick;
             stopButton.Hotkey = DaggerfallShortcut.GetBinding(DaggerfallShortcut.Buttons.RestStop);
             stopButton.OnKeyboardEvent += StopButton_OnKeyboardEvent;
-            stopButton.BackgroundTexture = modeButtonsImage[2];
+            stopButton.BackgroundTexture = _modeButtonsImage[2];
             stopButton.Enabled = false;
 
-            modeLabel[3] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, stopButton);
-            modeLabel[3].TextColor = UncannyUILoader.Instance.DefaultColor();
-            modeLabel[3].Text = StopString;
-            modeLabel[3].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
-            modeLabel[3].HorizontalAlignment = HorizontalAlignment.Center;
-            modeLabel[3].VerticalAlignment = VerticalAlignment.Middle;
+            _modeLabel[3] = DaggerfallUI.AddDefaultShadowedTextLabel(Vector2.zero, stopButton);
+            _modeLabel[3].TextColor = UncannyUILoader.Instance.DefaultColor();
+            _modeLabel[3].Text = StopString;
+            _modeLabel[3].HorizontalTextAlignment = TextLabel.HorizontalTextAlignmentSetting.Center;
+            _modeLabel[3].HorizontalAlignment = HorizontalAlignment.Center;
+            _modeLabel[3].VerticalAlignment = VerticalAlignment.Middle;
 
             // Store toggle closed binding for this window
             toggleClosedBinding = InputManager.Instance.GetBinding(InputManager.Actions.Rest);
@@ -251,18 +252,18 @@ namespace Game.Mods.UncannyUI.Scripts
             if (!endedRest)
                 ShowStatus();
 
-            if (currentTimeLabel != null)
-                currentTimeLabel.Text = DaggerfallUnity.Instance.WorldTime.Now.DateString() + " " + DaggerfallUnity.Instance.WorldTime.Now.MinTimeString();
+            if (_currentTimeLabel != null)
+                _currentTimeLabel.Text = DaggerfallUnity.Instance.WorldTime.Now.DateString() + " " + DaggerfallUnity.Instance.WorldTime.Now.MinTimeString();
 
             if (currentRestMode != RestModes.Selection)
             {
                 if (currentRestMode == RestModes.FullRest)
                 {
-                    restSlider.Value = totalHours;
+                    _restSlider.Value = totalHours;
                 }
                 else
                 {
-                    restSlider.Value = hoursRemaining;
+                    _restSlider.Value = hoursRemaining;
                 }
             }
         }
@@ -279,9 +280,9 @@ namespace Game.Mods.UncannyUI.Scripts
             string allowRestMsg;
             var canRest = CheckRestStatus(out allowRestMsg);
 
-            if (allowRestLabel != null)
+            if (_allowRestLabel != null)
             {
-                allowRestLabel.Text = allowRestMsg;
+                _allowRestLabel.Text = allowRestMsg;
             }
         }
 
@@ -298,19 +299,17 @@ namespace Game.Mods.UncannyUI.Scripts
         {
             baseTexture = UncannyUILoader.Instance.LoadRestUI();
 
-            mainPanelTexture = new Texture2D(mainPanelSize.x, mainPanelSize.y);
-            mainPanelTexture.filterMode = FilterMode.Point;
-            mainPanelTexture.SetPixels(baseTexture.GetPixels(0, 11, mainPanelSize.x, mainPanelSize.y)); //pixels are read bottom up
-            mainPanelTexture.Apply();
+            DFSize baseSize = new DFSize(154, 69);
 
-            modeButtonsImage = new Texture2D[3];
+            _mainPanelTexture = ImageReader.GetSubTexture(baseTexture, new Rect(0, 0, _mainPanelSize.x, _mainPanelSize.y), baseSize);
+            _mainPanelTexture.filterMode = DaggerfallUI.Instance.GlobalFilterMode;
 
-            for (var i = 0; i < modeButtonsImage.Length; i++)
+            _modeButtonsImage = new Texture2D[3];
+
+            for (var i = 0; i < _modeButtonsImage.Length; i++)
             {
-                modeButtonsImage[i] = new Texture2D((int)modeImageRect[i].width, (int)modeImageRect[i].height);
-                modeButtonsImage[i].filterMode = FilterMode.Point;
-                modeButtonsImage[i].SetPixels(baseTexture.GetPixels((int)modeImageRect[i].x, (int)modeImageRect[i].y, (int)modeImageRect[i].width, (int)modeImageRect[i].height));
-                modeButtonsImage[i].Apply();
+                _modeButtonsImage[i] = ImageReader.GetSubTexture(baseTexture, _modeImageRect[i], baseSize);
+                _modeButtonsImage[i].filterMode = DaggerfallUI.Instance.GlobalFilterMode;
             }
         }
 
@@ -569,7 +568,7 @@ namespace Game.Mods.UncannyUI.Scripts
                 const int cannotRestMoreThan99HoursTextId = 26;
 
                 // Validate input
-                var time = selectedTime;
+                var time = _selectedTime;
 
                 // Validate range
                 if (time < 0)
@@ -612,57 +611,57 @@ namespace Game.Mods.UncannyUI.Scripts
             // Display status based on current rest state
             if (currentRestMode == RestModes.Selection)
             {
-                for (var i = 0; i < modeButton.Length; i++)
+                for (var i = 0; i < _modeButton.Length; i++)
                 {
-                    if (modeButton[i] != null)
+                    if (_modeButton[i] != null)
                     {
-                        modeButton[i].Enabled = true;
+                        _modeButton[i].Enabled = true;
                     }
                 }
 
                 stopButton.Enabled = false;
-                allowRestPanel.Enabled = true;
+                _allowRestPanel.Enabled = true;
             }
             else if (currentRestMode == RestModes.FullRest)
             {
-                for (var i = 0; i < modeButton.Length; i++)
+                for (var i = 0; i < _modeButton.Length; i++)
                 {
-                    if (modeButton[i] != null)
+                    if (_modeButton[i] != null)
                     {
-                        modeButton[i].Enabled = false;
+                        _modeButton[i].Enabled = false;
                     }
                 }
 
                 stopButton.Enabled = true;
-                allowRestPanel.Enabled = false;
+                _allowRestPanel.Enabled = false;
                 counterLabel.Text = totalHours.ToString();
             }
             else if (currentRestMode == RestModes.TimedRest)
             {
-                for (var i = 0; i < modeButton.Length; i++)
+                for (var i = 0; i < _modeButton.Length; i++)
                 {
-                    if (modeButton[i] != null)
+                    if (_modeButton[i] != null)
                     {
-                        modeButton[i].Enabled = false;
+                        _modeButton[i].Enabled = false;
                     }
                 }
 
                 stopButton.Enabled = true;
-                allowRestPanel.Enabled = false;
+                _allowRestPanel.Enabled = false;
                 counterLabel.Text = hoursRemaining.ToString();
             }
             else if (currentRestMode == RestModes.Loiter)
             {
-                for (var i = 0; i < modeButton.Length; i++)
+                for (var i = 0; i < _modeButton.Length; i++)
                 {
-                    if (modeButton[i] != null)
+                    if (_modeButton[i] != null)
                     {
-                        modeButton[i].Enabled = false;
+                        _modeButton[i].Enabled = false;
                     }
                 }
 
                 stopButton.Enabled = true;
-                allowRestPanel.Enabled = false;
+                _allowRestPanel.Enabled = false;
                 counterLabel.Text = hoursRemaining.ToString();
             }
         }
@@ -670,7 +669,7 @@ namespace Game.Mods.UncannyUI.Scripts
         private void WhileButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
         {
             DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
-            selectedTime = restSlider.Value;
+            _selectedTime = _restSlider.Value;
 
             if (DaggerfallUnity.Settings.IllegalRestWarning && GameManager.Instance.PlayerGPS.IsPlayerInTown(true, true))
             {
@@ -698,7 +697,7 @@ namespace Game.Mods.UncannyUI.Scripts
         private void HealedButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
         {
             DaggerfallUI.Instance.PlayOneShot(SoundClips.ButtonClick);
-            selectedTime = restSlider.Value;
+            _selectedTime = _restSlider.Value;
 
             if (DaggerfallUnity.Settings.IllegalRestWarning && GameManager.Instance.PlayerGPS.IsPlayerInTown(true, true))
             {
@@ -725,10 +724,10 @@ namespace Game.Mods.UncannyUI.Scripts
         private void LoiterButton_OnMouseClick(BaseScreenComponent sender, Vector2 position)
         {
             // Validate input
-            selectedTime = restSlider.Value;
+            _selectedTime = _restSlider.Value;
 
             // Validate range
-            if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") > 1 && selectedTime > DaggerfallUnity.Settings.LoiterLimitInHours)
+            if (UncannyUILoader.Instance.GetModSettings().GetInt("Rest", "LoiterMode") > 1 && _selectedTime > DaggerfallUnity.Settings.LoiterLimitInHours)
             {
                 DaggerfallUI.MessageBox(new string[]
                 {
@@ -738,7 +737,7 @@ namespace Game.Mods.UncannyUI.Scripts
                 return;
             }
 
-            hoursRemaining = selectedTime;
+            hoursRemaining = _selectedTime;
             waitTimer = Time.realtimeSinceStartup;
             currentRestMode = RestModes.Loiter;
             playerEntity.IsLoitering = true;
